@@ -1,0 +1,305 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+```
+
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS")
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+```{r}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>%
+  filter(type == "complexity") %>%
+  mutate(
+    out = ifelse(value=="complex", yes=1, no=0)
+  ) 
+
+```
+
+
+Find NAs. 
+```{r}
+Complex %>%
+  filter(is.na(out)) %>%
+  group_by(definition) %>%
+  count() # looks like 1426 participants don't have item-level complexity scores. 
+
+```
+
+Drop missing cases
+```{r}
+Complex <- filter(Complex, !is.na(out))
+
+```
+
+
+```{r}
+Complex %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    sd=sd(out),
+    category = first(complexity_category)
+  ) %>%
+  arrange(category) %>%
+  kable(caption="Means and SDs for Each Item (Arranged by Item)")
+```
+
+Prepare dataset for IRT modeling
+```{r}
+Complex_short <- Complex %>%
+  dplyr::select(data_id, value, complexity_category, num_item_id) %>%
+  mutate(
+    out = ifelse(value=="complex", yes=1, no=0),
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  dplyr::select(-value) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(-data_id)
+
+```
+
+
+
+```{r}
+Complex_poly <- polychoric(Complex_short)
+
+rho <- Complex_poly$rho
+
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37") # create labels for corPlot because the defintions are long and take up a ton of space
+```
+
+
+Check out the correlations
+```{r}
+corPlot(rho, labels=lab)
+```
+They look really high. 
+
+
+A couple different measures of dimensionality:
+
+Princals
+```{r}
+pc <- princals(rho)
+
+plot(pc)
+```
+
+
+Scree plot with parallel analysis. 
+```{r}
+fa.parallel(rho, fa="fa", cor="poly")
+
+```
+Very simple structure
+```{r}
+vss(rho, cor="poly")
+```
+
+These tests seem to suggest a single factor is probably the best approach. 
+
+```{r}
+m1 <- mirt(Complex_short, 1, itemtype="2PL")
+```
+```{r}
+m1
+```
+```{r}
+summary(m1)
+```
+`
+
+
+```{r}
+M2(m1)
+```
+RMSEA and CFI are okay. 
+
+Let's look for misfitting items. 
+```{r}
+itemfit(m1)
+```
+
+A few items significantly misfit. Let's take everything with a p value less than .10. We'll look at item gam plots of those, which plot the item response probability against the latent variable using a gam function, to look for deviations in the item-response functoin.  
+
+```{r}
+misfit <- itemfit(m1) %>%
+  filter(p.S_X2 <= .10) %>%
+  select(item) %>%
+  as.vector()
+```
+
+```{r}
+items_good <- select(Complex_short, -all_of(misfit$item))
+items_bad <- select(Complex_short, all_of(misfit$item))
+```
+
+```{r}
+mod_fit <- mirt(items_good, 1, "2PL")
+Theta <- fscores(mod_fit)
+```
+```{r}
+IG762 <- itemGAM(items_bad$morphology762,Theta)
+IG764 <- itemGAM(items_bad$morphology764,Theta)
+IG769 <- itemGAM(items_bad$morphology762,Theta)
+IG771 <- itemGAM(items_bad$morphology764,Theta)
+
+IG783 <- itemGAM(items_bad$syntax783,Theta)
+IG792 <- itemGAM(items_bad$syntax792,Theta)
+```
+
+```{r}
+par(mfrow=c(3,2))
+plot(IG762); plot(IG764); plot(IG769); plot(IG771); plot(IG783); plot(IG792)
+
+```
+
+These don't look like massive deviations.
+
+Check dimensionality against 2 dimensional model. 
+```{r}
+m2 <- mirt(Complex_short, 2, itemtype="2PL")
+```
+
+```{r}
+summary(m2, "oblimin", suppress=.10)
+```
+
+
+```{r}
+anova(m1, m2)
+```
+This model fits better, but it doesn't look like the second factor is adding much of anything. 
+
+
+```{r}
+M2(m2)
+```
+
+```{r}
+itemfit(m2)
+```
+
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 12
+                      F2 = 13 - 37
+                      COV=F1*F2')
+
+m3 <- mirt(Complex_short, model.1, "2PL")
+```
+```{r}
+M2(m3)
+```
+```{r}
+summary(m3)
+```
+```{r}
+anova(m1, m3)
+```
+
+```{r}
+anova(m2, m3)
+```
+
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta = fscores(m1, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
+```
+
+```{r}
+coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+  
+```
+
+```{r}
+ggplot(coefs_2pl,  
+       aes(x = a1, y = d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = filter(coefs_2pl, 
+                                -d < -3.8 | -d > 5.3 | a1 > 4 | a1 < 1), 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty")
+```
+```{r}
+ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram()
+ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram()
+```
+
+```{r}
+m3 <- mirt(Complex_short, 1, itemtype="3PLu")
+```
+
+```{r}
+M2(m3)
+```
+
+
+```{r}
+anova(m1, m3)
+```
+
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta = fscores(m3, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+```
+
+```{r}
+m4 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW")
+```
+```{r}
+M2(m4)
+```
+
+
+
+
+
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta = fscores(m3, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+```
