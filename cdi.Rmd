@@ -1,27 +1,82 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: Psychometric modeling of the Syntactic Complexity Scale of the CDI
+author: Seamus Donnelly
+date created: June 25, 2021
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
-
-
-
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(wordbankr) # WB data
 library(tidyverse) # tidy
 library(mirt) # IRT models
+library(ltm) # more IRT functions
+#library(difr) # some differential item functioning tools. 
 library(psych) # some psychometric stuff (tests of dimensionality)
 library(Gifi)# some more psychometric stuff (tests of dimensionality)
 library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(GGally) # More plottinng options. 
+library()
 ```
 
 
+# A quick intro to IRT
+
+Item response theory is a class of models for estimating the difficulty of items and the proficiency level of participants. Imagine we have a data set with *i* binary items and *v* participants. If we wanted to predict how well Person 1 did on Item 1, we could just take the difference between Person 1's latent ability, and the difficulty of Item 1:
+
+$$
+\theta_{v = 1} - \beta_{i = 1}
+$$
+If Person 1's ability ($\theta$) is greater than the difficulty ($\theta$) for Item 1, then they're likely to get that item correct. If their ability is less than the difficulty of Item 1, then they are unlikely to get that item right. If we take the inverse logit of the difference between these values, we now have a probability that Person 1 person gets Item 1 correct. These two sets of values--participant abilities and item difficulties--and the inverse logit function are the components of the most basic IRT model, the Rasch model:
+
+$$
+P\left(X_{v i}=1\right)=\frac{\exp \left(\theta_{v}-\beta_{i}\right)}{1+\exp \left(\theta_{v}+\beta_{i}\right)}
+$$
+
+For intuition, if a person's ability equals the item's difficulty parameter, the difference is 0, and the equation above produces a probability of .5. When $\theta$ is larger than $\beta$, the probabilility will be greater than .5, and when $\theta$ is smaller than $\beta$ the probability will be smaller than .5. (Most programs swap the sign on $\beta$ for interpretability).
+
+The Rasch makes a strict assumption--that items vary in their difficulty, but not in how well they discriminate between participants of varying ability levels. This will be easier to wrap your head around with an example. I've fit a Rasch model to some data, and plotted item characteristic curves for some items. These tell us how estimated ability relates to the the probability of a correct response. 
+
 ```{r}
+library(MPsychoR)
+data("RWDQ")
+rasch <- rasch(RWDQ[,-1] )
+plot(rasch, item=2:6, legend=TRUE)
+```
+The thing to notice here is that these are all parallel. The items vary in the latent ability necessary to get a item correct 50% of the time (an intercept basically) but not in how well they discriminate between participants of different ability levels. We can modify the Rasch model above by adding a discimination parameter $\alpha$. this gives us the 2 parameter logistic regression equation below, which is what I use in the subsequent analyses: 
+
+$$
+\left(X_{v i}=1\right)=\frac{\exp \left(\alpha_{i}\left(\theta_{v}-\beta_{i}\right)\right)}{1+\exp \left(\alpha_{i}\left(\theta_{v}-\beta_{i}\right)\right)}
+$$
+Adding $\alpha$ allows the item response curves to have different slopes. 
+
+```{r}
+l2p <- ltm(RWDQ[,-1] ~z1)
+plot(l2p, item=2:6, legend=TRUE)
+```
+Now the item functions can cross. This means that the items don't discriminate as well as well as others. So wdq_25 is largely affected by changes in ability from -2 t 0, but levels off after 0, whereas wdq_24 is affected by changes in ability across the whole range. 
+
+So to sum this introduction up, the 2 parameter model allows us to estimate abilities which are characteristics of participants, and difficulty and discrimation parameters, which are properties of items. 
+
+
+# Preliminaries and Data Screening
+Ok now on to the Word Bank data. 
+
+
+Download data from Word Bank:
+```{r get data}
 Inst <- get_instrument_data(language="English (American)", form="WS")
 Admin <- get_administration_data(language="English (American)", form="WS")
 Item <- get_item_data(language="English (American)", form = "WS")
 ```
 
-```{r}
+Combine data sets. Create binary variable for accuracy.  
+```{r format data}
 Complex <- Admin %>%
   full_join(.,Inst, by="data_id") %>%
   full_join(., Item, by="num_item_id") %>%
@@ -34,8 +89,9 @@ Complex <- Admin %>%
 ```
 
 
-Find NAs. 
-```{r}
+## Data Screening
+Let's see how many missing values there are. 
+```{r count NAs}
 Complex %>%
   filter(is.na(out)) %>%
   group_by(definition) %>%
@@ -43,14 +99,14 @@ Complex %>%
 
 ```
 
-Drop missing cases
-```{r}
+Looks like there are 1426 participants don't have item-level complexity scores. So let's drop those. 
+```{r Drop NAs}
 Complex <- filter(Complex, !is.na(out))
 
 ```
 
-
-```{r}
+Let's look at means and SDs for each item:
+```{r Summary Tables}
 Complex %>%
   group_by(definition) %>%
   summarise(
@@ -62,7 +118,22 @@ Complex %>%
   kable(caption="Means and SDs for Each Item (Arranged by Item)")
 ```
 
-Prepare dataset for IRT modeling
+
+Let's also check the distribution of means for each category
+```{r}
+Complex %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    category = first(complexity_category)
+  ) %>%
+  ggplot(aes(x=category, y= mean)) + geom_boxplot()
+```
+
+
+
+## Data Preparation
+Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
 ```{r}
 Complex_short <- Complex %>%
   dplyr::select(data_id, value, complexity_category, num_item_id) %>%
@@ -76,10 +147,12 @@ Complex_short <- Complex %>%
 
 ```
 
+## Dimensionality Assessment
+Prior to fitting the IRT model, it's worth looking at the correlation structure of the data to get a sense of the possible dimensionality. 
 
-
+Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
 ```{r}
-Complex_poly <- polychoric(Complex_short)
+Complex_poly <- tetrachoric(Complex_short)
 
 rho <- Complex_poly$rho
 
@@ -91,33 +164,35 @@ Check out the correlations
 ```{r}
 corPlot(rho, labels=lab)
 ```
-They look really high. 
 
-
-A couple different measures of dimensionality:
-
-Princals
+They look really high. Let's examine the dimensionality, using princals, which is basically just a version of PCA that is appropriate for categorical data. 
 ```{r}
 pc <- princals(rho)
 
 plot(pc)
 ```
 
-
-Scree plot with parallel analysis. 
+Interesting. Seems like maybe there are 2 factors. An alternative approach is a scree plot with confidence intervals from simulated data:
 ```{r}
-fa.parallel(rho, fa="fa", cor="poly")
-
-```
-Very simple structure
-```{r}
-vss(rho, cor="poly")
+fa.parallel(rho, fa="fa", cor="tet", n.obs = 2788)
 ```
 
-These tests seem to suggest a single factor is probably the best approach. 
-
+Parallel analysis suggests one very large factor and a small second one. A third metric is very simple structure. This tells us the best solution assuming different values of k, where k is the maximum number of latent variables an observed variable loads on. 
 ```{r}
-m1 <- mirt(Complex_short, 1, itemtype="2PL")
+vss(rho, cor="tet", n.obs = 2788)
+```
+
+Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best 
+
+
+These tests seem to suggest a single factor is probably the best approach, though it's possible a two factor approach would be better. 
+
+# IRT Modeling
+
+## 2PL model
+Let's first fit the 2pl model and examine the output. 
+```{r  message=FALSE, warning=FALSE}
+m1 <- mirt(Complex_short, 1, itemtype="2PL", verbose=FALSE)
 ```
 ```{r}
 m1
@@ -125,120 +200,93 @@ m1
 ```{r}
 summary(m1)
 ```
-`
 
 
+Let's check the overall fit of the model. The chi square statistic here isn't super meaningful given the sample size.  
 ```{r}
 M2(m1)
 ```
-RMSEA and CFI are okay. 
 
-Let's look for misfitting items. 
+RMSEA and CFI are good, SRMSR is a bit high but pretty reasonable. We can see if individual items misfit -- i.e., do the observed cell counts differ from the expected cell counts. 
 ```{r}
 itemfit(m1)
 ```
 
-A few items significantly misfit. Let's take everything with a p value less than .10. We'll look at item gam plots of those, which plot the item response probability against the latent variable using a gam function, to look for deviations in the item-response functoin.  
+A few items significantly misfit. Let's take everything with a p value less than .10. We'll look at item gam plots of those, which plot the item response probability against the latent variable using a gam function, to look for deviations in the item-response function.   
 
-```{r}
-misfit <- itemfit(m1) %>%
+```{r, message=FALSE, warning=FALSE}
+misfit <- itemfit(m1) %>% # Get labels of mis-fitting items. 
   filter(p.S_X2 <= .10) %>%
-  select(item) %>%
+  dplyr::select(item) %>%
   as.vector()
-```
 
-```{r}
-items_good <- select(Complex_short, -all_of(misfit$item))
-items_bad <- select(Complex_short, all_of(misfit$item))
-```
+items_good <- dplyr::select(Complex_short, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Complex_short, all_of(misfit$item)) # Poorly fitting items
 
-```{r}
-mod_fit <- mirt(items_good, 1, "2PL")
+mod_fit <- mirt(items_good, 1, "2PL", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
 Theta <- fscores(mod_fit)
-```
-```{r}
+
+# Plot non-linear item response theory curves with the factor scores 
 IG762 <- itemGAM(items_bad$morphology762,Theta)
 IG764 <- itemGAM(items_bad$morphology764,Theta)
-IG769 <- itemGAM(items_bad$morphology762,Theta)
-IG771 <- itemGAM(items_bad$morphology764,Theta)
+IG769<- itemGAM(items_bad$morphology769,Theta)
+IG771 <- itemGAM(items_bad$morphology771,Theta)
 
 IG783 <- itemGAM(items_bad$syntax783,Theta)
 IG792 <- itemGAM(items_bad$syntax792,Theta)
 ```
 
+Here are the morphology items
 ```{r}
-par(mfrow=c(3,2))
-plot(IG762); plot(IG764); plot(IG769); plot(IG771); plot(IG783); plot(IG792)
-
+plot(IG762); plot(IG764); plot(IG769); plot(IG771)
+par(par(mfrow=c(2,2)))
+```
+Syntax items
+```{r}
+plot(IG783); plot(IG792)
 ```
 
-These don't look like massive deviations.
-
-Check dimensionality against 2 dimensional model. 
+These don't look like massive deviations. They are all monotonic, certainly, but they seem to slow down more than the logistic function. 
+ 
+Next let's look at the relationship between the true scores and the raw scores. 
 ```{r}
-m2 <- mirt(Complex_short, 2, itemtype="2PL")
-```
-
-```{r}
-summary(m2, "oblimin", suppress=.10)
-```
-
-
-```{r}
-anova(m1, m2)
-```
-This model fits better, but it doesn't look like the second factor is adding much of anything. 
-
-
-```{r}
-M2(m2)
-```
-
-```{r}
-itemfit(m2)
-```
-
-
-```{r}
-model.1 <- mirt.model('
-                      F1 = 1 - 12
-                      F2 = 13 - 37
-                      COV=F1*F2')
-
-m3 <- mirt(Complex_short, model.1, "2PL")
-```
-```{r}
-M2(m3)
-```
-```{r}
-summary(m3)
-```
-```{r}
-anova(m1, m3)
-```
-
-```{r}
-anova(m2, m3)
-```
-
-```{r}
-Complex_short %>%
+true_raw <- Complex_short %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
     Theta = fscores(m1, method="MAP")
   ) %>%
-  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+
+raw_score <- Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:37])
+    ) %>% 
+   ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
+
+true_score <- Complex_short %>%
+  mutate(
+    Theta = fscores(m1, method="MAP")
+    ) %>% 
+   ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
+
+library(patchwork)
+
+true_raw/(true_score + raw_score) 
 ```
 
+Two things suggest this is a more precise measurement: the relationship between the true and raw scores is sigmoid-ish, and there are multiple values of the true score at every level of the observed score. Also, note the number of 0s on the raw score, and really high scores on the true score. 
+
+
+Next let's take a look at the difficulty and discrimination parameter for each item. 
 ```{r}
 coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
  t() %>%
   as_tibble() %>%
-  select(-c(149:150)) %>%
+  dplyr::select(-c(149:150)) %>%
   pivot_longer(everything()) %>%
   separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
   pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
-  select(item, a1, d) %>%
+  dplyr::select(item, a1, d) %>%
   mutate(
    category =  gsub('[[:digit:]]+', '', item)
   )
@@ -249,57 +297,198 @@ coefs_2pl <- coef(m1, as.data.frame = TRUE) %>%
 ggplot(coefs_2pl,  
        aes(x = a1, y = d)) + 
   geom_point(alpha = .3) + 
-  ggrepel::geom_text_repel(data = filter(coefs_2pl, 
-                                -d < -3.8 | -d > 5.3 | a1 > 4 | a1 < 1), 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
                   aes(label = item), size = 3) + 
   xlab("Discrimination") + 
-  ylab("Difficulty")
-```
-```{r}
-ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram()
-ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram()
+  ylab("Difficulty") + theme_minimal()
 ```
 
 ```{r}
-m3 <- mirt(Complex_short, 1, itemtype="3PLu")
+ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
 ```
 
+
+Strong correlation between the difficulty and discrimination parameter. Also note that the morphology items are less difficult than the syntax ones in general. 
+
+
+
+
+## Thinking Through the Assumptions of the 2PL model 
+It's important to remember that these latent variables are only interpretable if the following conditions hold:
+1.  The assumption of unidimensionality is appropriate. 
+2.  The assumed distributional form of the latent variable is correct. 
+3.  Measurement invariance holds: the items behave the same way across different groups of participants.
+
+I can test 1 and 2 on my own. 3 is a bit of a stretch for me right now. 
+
+
+### Non-parametric model relaxing assumption of normal latent variable. 
+
+Let's look at the distribution of the latent variable first. MIRT allows us to relax the assumption of normally distributed latent variables at the cost of loss of flexibility. I'll look at a model which makes no assumptions about the form of the latent variable **note to self: check this later** , and compare results to those above. 
+
+```{r, warning=TRUE, message=TRUE}
+m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EH", verbose=FALSE)
+
+M2(m1_nonpar)
+```
+
+RMSREA is a bit lower than the model above. The standarized residuals are quite large though. 
+
 ```{r}
+Complex_short %>%
+  mutate(
+    Theta_EH = fscores(m1_nonpar, method="MAP"), 
+    Theta_gauss = fscores(m1, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+
+```
+
+These are quite similar though a bit different in the tails. There's another type of non-parametric latent variable in MIRT. 
+
+```{r}
+m1_nonpar2 <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW", verbose=FALSE)
+
+M2(m1_nonpar2)
+
+Complex_short %>%
+  mutate(
+    Theta_EH2 = fscores(m1_nonpar2, method="MAP"), 
+    Theta_gauss = fscores(m1, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta_EH2, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+```
+
+These are also very, very close. I think it's sensible to stick with the Gaussian model. It fits better, its simpler and more flexible, and the factor scores are really, really similar across the two approaches. 
+
+
+The next thing we can do is check the dimensionality. I got mixed results before. 
+Check dimensionality against 2 dimensional model. 
+
+### Test assumption of unidimensionality 
+
+First a formal test of dimensionality. We need to fit the model with ltm. The unidimTest takes forever to run and produces enormous output, so it's commented out. 
+```{r}
+#m1_ltm <- ltm(Complex_short ~z1)
+#unidimTest(m1_ltm, Complex_short)
+```
+
+Looks like this test of uni-dimensionality has been rejected. Let's try explicitly modeling the multidimensionality. 
+
+
+Exploratory 2 dimensional IRT. 
+```{r, warning=TRUE, message=TRUE}
+m2 <- mirt(Complex_short, 2, itemtype="2PL", verbose=FALSE)
+```
+
+
+```{r}
+M2(m2)
+anova(m1, m2)
+summary(m2, "oblimin", suppress=.20)
+```
+
+This model fits better, but it doesn't look like the second factor is adding much of anything. Also it looks like the correlation between factors is really small, which seems unlikely given the way language works. 
+
+
+Plot the discrimination parameters for each dimension against one another. 
+```{r}
+coefs_2plmulti <- coef(m2, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(185:190)) %>%
+  pivot_longer(everything()) %>%
+  separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, a2, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  ) 
+ggplot(coefs_2plmulti ,  
+       aes(x = a1, y = a2)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data =coefs_2plmulti, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination1") + 
+  ylab("Discrimination2") + theme_minimal()
+```
+2 discrimination parameters. They're both negative. I'm wondering if these are parameterized a little bit differently, such that they mean something different in the two dimensional context. 
+
+Plot the latent variables against the raw scores and against one another. 
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta1 = fscores(m2, method="MAP")[,1], 
+    Theta2 = fscores(m2, method="MAP")[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+The correlation between the raw scores and Theta1 is extremely high, whereas the correlation between theta2 and the raw score is minimal. It also has a much smaller range. There's als a weak correlation between the factor scores. 
+
+
+
+Another way to think about this problem is that perhaps the morphology and syntax items are measuring different proficiencies
+We can fit a confirmatory IRT model, with one morphology factor and on syntactic. 
+
+```{r, warning=FALSE, message=FALSE}
+model.1 <- mirt.model('
+                      F1 = 1 - 12
+                      F2 = 13 - 37
+                      COV=F1*F2')
+
+m3 <- mirt(Complex_short, model.1, "2PL", verbose=FALSE)
+
 M2(m3)
+
+summary(m3)
 ```
 
+The fit is pretty good, but the correlation between the latent variables is very high, .959
 
+Compare the fit to the one dimension model and two-dimension exploratory model. 
 ```{r}
 anova(m1, m3)
+anova(m2, m3)
 ```
 
+It its better than the 1 dimension, but worse than the 2 dimension exploratory model. Let's try plotting each of the proficiencies against the raw data. 
 ```{r}
 Complex_short %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
-    Theta = fscores(m3, method="MAP")
+    Theta1 = fscores(m3, method="MAP")[,1], 
+    Theta2 = fscores(m3, method="MAP")[,2]
   ) %>%
-  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+```
 
+The correlation between the morphology latent variable and the syntax latent variable is like .99. They show the same results, more or less. 
+
+# The Relationship between predictors and vocabulary proficiency. 
+```{r}
+Sys.Date() 
+R.Version()
 ```
 
 ```{r}
-m4 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW")
 ```
-```{r}
-M2(m4)
-```
-
-
-
-
 
 ```{r}
-Complex_short %>%
-  mutate(
-    Raw = rowSums(.[,1:37]), 
-    Theta = fscores(m3, method="MAP")
-  ) %>%
-  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess")
-
 ```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+
