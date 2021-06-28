@@ -48,7 +48,9 @@ data("RWDQ")
 rasch <- rasch(RWDQ[,-1] )
 plot(rasch, item=2:6, legend=TRUE)
 ```
-The thing to notice here is that these are all parallel. The items vary in the latent ability necessary to get a item correct 50% of the time (an intercept basically) but not in how well they discriminate between participants of different ability levels. We can modify the Rasch model above by adding a discimination parameter $\alpha$. this gives us the 2 parameter logistic regression equation below, which is what I use in the subsequent analyses: 
+
+
+The thing to notice here is that these are all parallel. The items vary in the latent ability necessary to get a item correct 50% of the time (an intercept basically) but not in how well they discriminate between participants of different ability levels. We can modify the Rasch model above by adding a discrimination parameter $\alpha$. this gives us the 2 parameter logistic regression equation below, which is what I use in the subsequent analyses: 
 
 $$
 \left(X_{v i}=1\right)=\frac{\exp \left(\alpha_{i}\left(\theta_{v}-\beta_{i}\right)\right)}{1+\exp \left(\alpha_{i}\left(\theta_{v}-\beta_{i}\right)\right)}
@@ -59,9 +61,10 @@ Adding $\alpha$ allows the item response curves to have different slopes.
 l2p <- ltm(RWDQ[,-1] ~z1)
 plot(l2p, item=2:6, legend=TRUE)
 ```
-Now the item functions can cross. This means that the items don't discriminate as well as well as others. So wdq_25 is largely affected by changes in ability from -2 t 0, but levels off after 0, whereas wdq_24 is affected by changes in ability across the whole range. 
 
-So to sum this introduction up, the 2 parameter model allows us to estimate abilities which are characteristics of participants, and difficulty and discrimation parameters, which are properties of items. 
+Now the item functions can cross. This means that some items don't discriminate as well as well as others. So wdq_25 is largely affected by changes in ability from -2 t 0, but levels off after 0, whereas wdq_24 is affected by changes in ability across the whole range. 
+
+So to sum this introduction up, the 2 parameter model allows us to estimate abilities which are characteristics of participants, and difficulty and discrimination parameters, which are properties of items. 
 
 
 # Preliminaries and Data Screening
@@ -135,16 +138,17 @@ Complex %>%
 ## Data Preparation
 Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
 ```{r}
-Complex_short <- Complex %>%
+Complex_short_with_ids <- Complex %>% # made 
   dplyr::select(data_id, value, complexity_category, num_item_id) %>%
   mutate(
     out = ifelse(value=="complex", yes=1, no=0),
     label = str_c(complexity_category, num_item_id)
   ) %>%
   dplyr::select(-value) %>%
-  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
-  dplyr::select(-data_id)
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") # dataset for IRT can't have IDs
 
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(-data_id)
 ```
 
 ## Dimensionality Assessment
@@ -316,9 +320,9 @@ Strong correlation between the difficulty and discrimination parameter. Also not
 
 ## Thinking Through the Assumptions of the 2PL model 
 It's important to remember that these latent variables are only interpretable if the following conditions hold:
-1.  The assumption of unidimensionality is appropriate. 
-2.  The assumed distributional form of the latent variable is correct. 
-3.  Measurement invariance holds: the items behave the same way across different groups of participants.
+1. The assumption of unidimensionality is appropriate. 
+2. The assumed distributional form of the latent variable is correct. 
+3. Measurement invariance holds: the items behave the same way across different groups of participants.
 
 I can test 1 and 2 on my own. 3 is a bit of a stretch for me right now. 
 
@@ -470,25 +474,54 @@ Complex_short %>%
 
 The correlation between the morphology latent variable and the syntax latent variable is like .99. They show the same results, more or less. 
 
-# The Relationship between predictors and vocabulary proficiency. 
+# The Relationship between predictors and grammatical proficiency. 
+
+```{r}
+by_Participant <-Complex_short_with_ids %>% 
+  mutate(
+    Theta = fscores(m1, method="MAP")[,1],
+    Raw = rowSums(.[2:38])
+    ) %>%
+  dplyr::select(data_id, Raw, Theta) %>%
+  full_join(Complex) %>%
+  group_by(data_id) %>%
+  slice(1)
+```
+
+```{r}
+theta_by_age <- by_Participant %>%
+  ggplot(aes(x=age, y=Theta)) + geom_point() + stat_smooth(method="loess")
+
+raw_by_age <- by_Participant %>%
+  ggplot(aes(x=age, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+theta_by_age | raw_by_age
+```
+So, that's really interesting. One I've accounted for the measurement error, the effect of age on grammatical complexity is pretty linear, whereas with the raw scores it's clearly non-linear. 
+
+```{r}
+theta_by_prod <- by_Participant %>%
+  ggplot(aes(x=production, y=Theta)) + geom_point() + stat_smooth(method="loess")
+
+raw_by_prod <- by_Participant %>%
+  ggplot(aes(x=production, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+theta_by_prod | raw_by_prod
+```
+
+```{r}
+summary(lm(Theta ~ production, data=by_Participant))
+```
+
+```{r}
+```
+
+
 ```{r}
 Sys.Date() 
 R.Version()
 ```
 
-```{r}
-```
 
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
 
 
