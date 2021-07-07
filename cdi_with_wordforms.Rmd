@@ -67,7 +67,9 @@ Complex %>%
   count() 
 ```
 
-Looks like there are 1426 participants don't have item-level complexity scores. There are a further 23 participants who don't have word ending scores, but do have syntactic complexity. I think that IRT models can handle this missing data. 
+Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word froms, 1 who doesn't have word endings. 
+
+
 ```{r Drop NAs}
 Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
 ```
@@ -99,7 +101,13 @@ Complex %>%
   ggplot(aes(x=category, y= mean)) + geom_boxplot()
 ```
 
+It seems like the word endings (possses s, etc) and the combine words variable have higher means than the morphological and syntactic complexity items. The overregularization items 
+have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
 
+
+On difficulty I just thought of is that the we would expect the word form and over-regularizations to be non-monotonially related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
+
+I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
 
 ## Data Preparation
 Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
@@ -122,7 +130,7 @@ Prior to fitting the IRT model, it's worth looking at the correlation structure 
 
 Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
 ```{r}
-Complex_poly <- tetrachoric(Complex_short, correct=.001)
+Complex_poly <- tetrachoric(Complex_short)
 
 rho <- Complex_poly$rho
 
@@ -142,25 +150,24 @@ plot(pc)
 
 Interesting. Seems like maybe there are 2 factors. An alternative approach is a scree plot with confidence intervals from simulated data:
 ```{r}
-fa.parallel(rho, fa="fa", cor="tet", correct=.001, n.obs = 2785)
+fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
+Parallel analysis suggests one very large factor and a small second one. Although with these additional items, I'm seeing some convergence complaints that I wasn't seeing before. These dimenionsality tests aren't of substnative interest, so I'm not esepecially worried, but it's worth keeping this in mind for the later models. 
 
-Parallel analysis suggests one very large factor and a small second one. A third metric is very simple structure. This tells us the best solution assuming different values of k, where k is the maximum number of latent variables an observed variable loads on. 
+A third metric is very simple structure. This tells us the best solution assuming different values of k, where k is the maximum number of latent variables an observed variable loads on. 
+
 ```{r}
 vss(rho, cor="tet", n.obs = 2785)
 ```
 
-Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best 
-
-
-These tests seem to suggest a single factor is probably the best approach, though it's possible a two factor approach would be better. 
+Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best. Again, note that the algorithm is difficult to estimate.  
 
 # IRT Modeling
 
 ## 2PL model
 Let's first fit the 2pl model and examine the output. 
 ```{r  message=FALSE, warning=FALSE}
-m1 <- mirt(Complex_short, 1, itemtype="2PL", verbose=FALSE)
+m1 <- mirt(Complex_short, 1, itemtype="2PL")
 ```
 
 ```{r}
@@ -178,6 +185,7 @@ M2(m1)
 ```
 
 RMSEA and CFI are good, SRMSR is a bit high but pretty reasonable. We can see if individual items misfit -- i.e., do the observed cell counts differ from the expected cell counts. 
+
 ```{r}
 itemfit(m1)
 ```
@@ -215,15 +223,14 @@ IG789 <- itemGAM(items_bad$syntax789,Theta)
 IG792 <- itemGAM(items_bad$syntax792,Theta)
 ```
 
-
-Here are the morphology items
+Combine
 ```{r}
 plot(IG760)
 ```
+Flattens out pretty quickly at a difficulty of 0. 
 
 ```{r}
 plot(IG761); plot(IG762); plot(IG763); plot(IG769)
-
 ```
 Syntax items
 ```{r}
@@ -231,10 +238,7 @@ plot(IG775); plot(IG776); plot(IG789); plot(IG792)
 ```
 I'm not sure what's happening with item 775. Why is the probability of a correct response lower at the highest values? This wasn't the case before the other variables were added. 
 
-
-These don't look like massive deviations. They are all monotonic, certainly, but they seem to slow down more than the logistic function. 
- 
-Next let's look at the relationship between the true scores and the raw scores. 
+ Next let's look at the relationship between the true scores and the raw scores. 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
@@ -259,9 +263,7 @@ library(patchwork)
 
 true_raw/(true_score + raw_score) 
 ```
-
-Two things suggest this is a more precise measurement: the relationship between the true and raw scores is sigmoid-ish, and there are multiple values of the true score at every level of the observed score. Also, note the number of 0s on the raw score, and really high scores on the true score. 
-
+Well, we're getting a little more sensitivity at the lower end of the scale than we had before, and the results are starting to look a bit closer to gaussian-ish. 
 
 Next let's take a look at the difficulty and discrimination parameter for each item. 
 ```{r}
@@ -277,9 +279,6 @@ coefs_2pl <- coef(m1, as.data.frame = TRUE) %>%
    category =  gsub('[[:digit:]]+', '', item)
   )
   
-```
-
-```{r}
 ggplot(coefs_2pl,  
        aes(x = a1, y = d)) + 
   geom_point(alpha = .3) + 
@@ -295,39 +294,198 @@ ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
 ```
 
 ```{r}
-Complex_short_with_ids %>%
+Theta_by_Wordforms <- Complex_short_with_ids %>%
+  mutate(
+    rn = row_number()
+  ) %>%
   transmute(
     Word_form = rowSums(.[,6:30]), 
-    OverReg = rowSums(.[,31:75]),
-    Theta = fscores(m1, "MAP")
-  ) %>%
-  ggpairs()
+    Over_Reg = rowSums(.[,31:75]),
+    Theta = as.numeric(fscores(m1, "MAP"))
+  ) 
+
+p1 <- ggplot(Theta_by_Wordforms, aes(x=Theta, y=Word_form)) + geom_point() + stat_smooth(method="loess")
+p2 <- ggplot(Theta_by_Wordforms, aes(x=Theta, y=Over_Reg)) + geom_point() + stat_smooth(method="loess")
+p3 <- ggplot(Theta_by_Wordforms, aes(x=Theta)) + geom_histogram()
+p4 <- ggplot(Theta_by_Wordforms, aes(x=Word_form)) + geom_histogram()
+p5 <- ggplot(Theta_by_Wordforms, aes(x=Over_Reg)) + geom_histogram()
+             
+(p1 | p2)/(p3 | p4 | p5)
+
 ```
-OK, something is wrong here. 
+Interesting to see that neither is clearly non-monotonic, even though that's what we would expect from theories of language acquisition. 
 
 
 
+# Adding Word Forms. 
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
 
 
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax", "word_forms")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
+```
+
+```{r}
+Complex_poly <- tetrachoric(Complex_short)
+
+rho <- Complex_poly$rho
+
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+"61", "62", "63", "64", "65", "66", "67") # create labels for corPlot because the defintions are long and take up a ton of space
+```
+
+```{r}
+corPlot(rho, labels=lab)
+```
+
+```{r}
+pc <- princals(rho)
+
+plot(pc)
+```
+
+```{r}
+fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
+```
 
 
+```{r}
+vss(rho, fa="fa", cor="tet", n.obs = 2785)
+```
+
+```{r}
+m2 <- mirt(Complex_short, 1, itemtype="2PL")
+
+summary(m2)
+```
+
+```{r}
+M2(m2)
+```
+
+```{r}
+itemfit(m2)
+```
+
+```{r}
+m2b <- mirt(Complex_short, 2, "2PL")
+```
+
+```{r}
+summary(m2b, "oblimin", suppress=.20)
+```
+
+It looks like the word forms are loading consistently on a different factor from the morphosyntactic complexity factor. 
 
 
+# Adding Overregularizations. 
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
 
 
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax", "word_endings"))) # dataset for IRT can't have IDs
+```
 
-Strong correlation between the difficulty and discrimination parameter. Also note that the morphology items are less difficult than the syntax ones in general. 
+
+```{r}
+Complex_poly <- tetrachoric(Complex_short)
+
+rho <- Complex_poly$rho
+
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+"61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", "73", "74", "75", "76", "77", "78", "79", "80",
+"81", "82", "83", "84", "85", "86", "87" ) # create labels for corPlot because the defintions are long and take up a ton of space
+
+corPlot(rho, labels=lab)
+pc <- princals(rho)
+plot(pc)
+```
+
+```{r}
+fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
+vss(rho, fa="fa", cor="tet", n.obs = 2785)
+```
+
+```{r}
+m3b <- mirt(Complex_short, 2, "2PL")
+summary(m3b, "oblimin", suppress=.20)
+```
+As was the case with the word form variables, all of the word endings variables loaded onto a separate factor from the morphosyntactic complexity variables.  
 
 
+# Quick Interim Summary
+
+So a quick re-cap: The word form variables and overgeneralization variables had similar means to the morphosyntactic complexity variables, which were generally lower than the means of the word combination variable or the general word endings variables. I was concerned about including the word form and overgeneralization variables to the IRT models because they are theoretically non-monotonically related to syntactic proficiency. We would expect children to initially produce high frequency irregular forms, then go through a stage of over-regularization, and finally to produce the correct irregular word forms again. However, when I plotted the total scores on these subscales against a syntactic proficiency variable derived from the other subscales, I did not see evidence of a non-monotonic relationship. Rather in both cases, subscale scores increased with increasing syntactic proficiency. 
+
+I then tried fitting two more models, one that included the word form variables and another that included the overgeneralization variables. Exploration of the dimensionality suggested that adding these variables resulted in a much clearer multi-dimensional structure (see categorical PCAs and scree plots). In both cases, exploratory two dimensional IRTs indicated two-factor solutions in which one factor was dominated by the morphosyntactic complexity variables and the other was dominated by the word form or overregularization variables. 
+
+It's difficult to say exactly what this means, as these results could plausibly be due to different psychological demands of learning the relevant structure or some sort of difference in reporting biases across the scales. 
 
 
-## Thinking Through the Assumptions of the 2PL model 
-It's important to remember that these latent variables are only interpretable if the following conditions hold:
-1. The assumption of unidimensionality is appropriate. 
-2. The assumed distributional form of the latent variable is correct. 
-3. Measurement invariance holds: the items behave the same way across different groups of participants.
+# Final Model
 
-I can test 1 and 2 on my own. 3 is a bit of a stretch for me right now. 
+I think I'm going to stick with the model that includes the complexity variable and the word endings variables as they seem to increase the sensitivity of the model to lower proficiency children and do not appear to affect the dimensionality much. 
+
+Get the dataset back. 
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
+
+
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
+```
+
+```{r}
+summary(m1)
+```
+
+## More formal tests of the dimensionality 
+```{r}
+m1b <- mirt(Complex_short, 2, "2PL")
+```
+
+```{r}
+anova(m1, m1b)
+```
+
+```{r}
+summary(m1b, "oblimin", suppress=.2)
+```
+
+We have a similar solution to what we had in the first version of this analysis. The factor model fits better but it's not at all clear what the second factor is adding. Everything loads strongly on the first factor and
+
+```{r}
+m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EH")
+
+M2(m1_nonpar)
+```
+
+
+```{r}
+m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW")
+
+M2(m1_nonpar)
+```
 
 
 ### Non-parametric model relaxing assumption of normal latent variable. 
@@ -438,16 +596,13 @@ Complex_short %>%
 The correlation between the raw scores and Theta1 is extremely high, whereas the correlation between theta2 and the raw score is minimal. It also has a much smaller range. There's also a weak correlation between the factor scores. 
 
 
-# Adding the word form variables. 
 
 ```{r}
 
 ```
 
 
-```{r}
 
-```
 
 
 ```{r}
