@@ -91,14 +91,19 @@ Complex %>%
 
 Let's also check the distribution of means for each category
 ```{r}
+addline_format <- function(x,...){
+    gsub('\\s','\n',x)
+}
+
 Complex %>%
   filter(!is.na(out)) %>%
   group_by(definition) %>%
   summarise(
     mean=mean(out), 
-    category = first(complexity_category)
+    category = first(complexity_category),
+    cat2 = str_replace(category, "_", "" ) %>% str_replace("_", "" ) 
   ) %>%
-  ggplot(aes(x=category, y= mean)) + geom_boxplot()
+  ggplot(aes(x=category, y= mean)) + geom_boxplot() 
 ```
 
 It seems like the word endings (possses s, etc) and the combine words variable have higher means than the morphological and syntactic complexity items. The overregularization items 
@@ -148,7 +153,9 @@ pc <- princals(rho)
 plot(pc)
 ```
 
-Interesting. Seems like maybe there are 2 factors. An alternative approach is a scree plot with confidence intervals from simulated data:
+Seems like there are more intermediate points in between the two clouds of vectors I saw with the earlier version of the data set. However, the plot has fipped, so that most of the vectors are pointing toward the positive first component. 
+
+
 ```{r}
 fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
@@ -315,7 +322,7 @@ p5 <- ggplot(Theta_by_Wordforms, aes(x=Over_Reg)) + geom_histogram()
 ```
 Interesting to see that neither is clearly non-monotonic, even though that's what we would expect from theories of language acquisition. 
 
-
+Now I'm going to try adding each of those sets of variables to the model I fit above. I do the word forms first and then the over-regularization 
 
 # Adding Word Forms. 
 ```{r}
@@ -350,6 +357,7 @@ pc <- princals(rho)
 
 plot(pc)
 ```
+Looks like there's a big clumb of vectors in one area but then way more pointing out in random directions, which I think will create some fit issues. 
 
 ```{r}
 fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
@@ -364,15 +372,10 @@ vss(rho, fa="fa", cor="tet", n.obs = 2785)
 m2 <- mirt(Complex_short, 1, itemtype="2PL")
 
 summary(m2)
-```
 
-```{r}
 M2(m2)
 ```
 
-```{r}
-itemfit(m2)
-```
 
 ```{r}
 m2b <- mirt(Complex_short, 2, "2PL")
@@ -381,9 +384,14 @@ m2b <- mirt(Complex_short, 2, "2PL")
 ```{r}
 summary(m2b, "oblimin", suppress=.20)
 ```
+```{r}
+m2c <- mirt(Complex_short, 1, "3PLu")
 
+```
 It looks like the word forms are loading consistently on a different factor from the morphosyntactic complexity factor. 
 
+
+Another possibility is that all of those items are guesses--especially since they're means are all low. 
 
 # Adding Overregularizations. 
 ```{r}
@@ -424,6 +432,12 @@ vss(rho, fa="fa", cor="tet", n.obs = 2785)
 m3b <- mirt(Complex_short, 2, "2PL")
 summary(m3b, "oblimin", suppress=.20)
 ```
+```{r}
+m3c <- mirt(Complex_short, 1, "3PLu")
+summary(m3c, "oblimin", suppress=.20)
+```
+
+
 As was the case with the word form variables, all of the word endings variables loaded onto a separate factor from the morphosyntactic complexity variables.  
 
 
@@ -472,33 +486,25 @@ anova(m1, m1b)
 summary(m1b, "oblimin", suppress=.2)
 ```
 
-We have a similar solution to what we had in the first version of this analysis. The factor model fits better but it's not at all clear what the second factor is adding. Everything loads strongly on the first factor and
+We have a similar solution to what we had in the first version of this analysis. The factor model fits better but it's not at all clear what the second factor is adding. Everything loads strongly on the first factor and very little on the second factor. 
 
+Three parameter model with inverse guessing parameter. 
+```{r}
+m1c <- mirt(Complex_short, 1, "3PLu")
+```
+```{r}
+anova(m1c, m1)
+```
+
+Model fits a little better, but the guessing parameters were all above .9 so I don't think those are adding very much. 
+
+
+Comapre with 1 factor 2PL model with semi-parametric latent variable specification. 
 ```{r}
 m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EH")
 
 M2(m1_nonpar)
 ```
-
-
-```{r}
-m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW")
-
-M2(m1_nonpar)
-```
-
-
-### Non-parametric model relaxing assumption of normal latent variable. 
-
-Let's look at the distribution of the latent variable first. MIRT allows us to relax the assumption of normally distributed latent variables at the cost of loss of flexibility. I'll look at a model which makes no assumptions about the form of the latent variable **note to self: check this later** , and compare results to those above. 
-
-```{r, warning=TRUE, message=TRUE}
-m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EH", verbose=FALSE)
-
-M2(m1_nonpar)
-```
-
-RMSREA is a bit lower than the model above. The standarized residuals are quite large though. 
 
 ```{r}
 Complex_short %>%
@@ -507,121 +513,125 @@ Complex_short %>%
     Theta_gauss = fscores(m1, method="MAP")
   ) %>%
   ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
-
 ```
 
-These are quite similar though a bit different in the tails. There's another type of non-parametric latent variable in MIRT. 
+
 
 ```{r}
-m1_nonpar2 <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW", verbose=FALSE)
+m1_nonpar2 <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW")
 
 M2(m1_nonpar2)
+```
 
+```{r}
 Complex_short %>%
   mutate(
-    Theta_EH2 = fscores(m1_nonpar2, method="MAP"), 
+    Theta_EH = fscores(m1_nonpar2, method="MAP"), 
     Theta_gauss = fscores(m1, method="MAP")
   ) %>%
-  ggplot(aes(x=Theta_EH2, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+  ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 ```
 
-These are also very, very close. I think it's sensible to stick with the Gaussian model. It fits better, its simpler and more flexible, and the factor scores are really, really similar across the two approaches. 
+These semi-parametric alternatives look pretty similar. 
 
 
-The next thing we can do is check the dimensionality. I got mixed results before. 
-Check dimensionality against 2 dimensional model. 
-
-### Test assumption of unidimensionality 
-
-First a formal test of dimensionality. We need to fit the model with ltm. The unidimTest takes forever to run and produces enormous output, so it's commented out. 
-```{r}
-#m1_ltm <- ltm(Complex_short ~z1)
-#unidimTest(m1_ltm, Complex_short)
-```
-
-Looks like this test of uni-dimensionality has been rejected. Let's try explicitly modeling the multidimensionality. 
 
 
-Exploratory 2 dimensional IRT. 
-```{r, warning=TRUE, message=TRUE}
-m2 <- mirt(Complex_short, 2, itemtype="2PL", verbose=FALSE)
-```
 
 
 ```{r}
-M2(m2)
-anova(m1, m2)
-summary(m2, "oblimin", suppress=.20)
-```
-
-This model fits better, but it doesn't look like the second factor is adding much of anything. Also it looks like the correlation between factors is really small, which seems unlikely given the way language works. 
-
-
-Plot the discrimination parameters for each dimension against one another. 
-```{r}
-coefs_2plmulti <- coef(m2, as.data.frame = TRUE) %>% 
- t() %>%
-  as_tibble() %>%
-  dplyr::select(-c(185:190)) %>%
-  pivot_longer(everything()) %>%
-  separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
-  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
-  dplyr::select(item, a1, a2, d) %>%
+by_Participant <-Complex_short_with_ids %>% 
   mutate(
-   category =  gsub('[[:digit:]]+', '', item)
-  ) 
-ggplot(coefs_2plmulti ,  
-       aes(x = a1, y = a2)) + 
-  geom_point(alpha = .3) + 
-  ggrepel::geom_text_repel(data =coefs_2plmulti, 
-                  aes(label = item), size = 3) + 
-  xlab("Discrimination1") + 
-  ylab("Discrimination2") + theme_minimal()
+    Theta = fscores(m1, method="MAP")[,1],
+    Raw = rowSums(.[2:38])
+    ) %>%
+  dplyr::select(data_id, Raw, Theta) %>%
+  full_join(Complex) %>%
+  group_by(data_id) %>%
+  slice(1)
 ```
-2 discrimination parameters. They're both negative. I'm wondering if these are parameterized a little bit differently, such that they mean something different in the two dimensional context. 
 
-Plot the latent variables against the raw scores and against one another. 
+
+
+
+
 ```{r}
-Complex_short %>%
+theta_by_age <- by_Participant %>%
+  ggplot(aes(x=age, y=Theta)) + geom_point() + stat_smooth(method="loess")
+
+raw_by_age <- by_Participant %>%
+  ggplot(aes(x=age, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+theta_by_age | raw_by_age
+
+```
+
+
+```{r}
+theta_by_prod <- by_Participant %>%
+  ggplot(aes(x=production, y=Theta)) + geom_point() + stat_smooth(method="loess")
+
+raw_by_prod <- by_Participant %>%
+  ggplot(aes(x=production, y=Raw)) + geom_point() + stat_smooth(method="loess")
+
+theta_by_prod | raw_by_prod
+
+```
+
+# Examining Measurement Invariance. 
+
+Create data sets with predictor variables for 
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
   mutate(
-    Raw = rowSums(.[,1:42]), 
-    Theta1 = fscores(m2, method="MAP")[,1], 
-    Theta2 = fscores(m2, method="MAP")[,2]
+    label = str_c(complexity_category, num_item_id)
   ) %>%
-  dplyr::select(Raw, Theta1, Theta2) %>%
-  ggpairs()
-
+  dplyr::select(data_id, label, out) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
 ```
 
-The correlation between the raw scores and Theta1 is extremely high, whereas the correlation between theta2 and the raw score is minimal. It also has a much smaller range. There's also a weak correlation between the factor scores. 
-
-
-
 ```{r}
-
-```
-
-
-
-
-
-```{r}
-
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
 ```
 
 
 ```{r}
-
+Complex_with_predictors <- Admin %>%
+  dplyr::select(data_id, age, ethnicity, sex) %>%
+  mutate(
+    female = ifelse(sex=="female", yes=1, no=0)
+  ) %>%
+  right_join(., Complex_short_with_ids, by="data_id")
 ```
+
+```{r}
+Complex_with_predictors %>%
+  summarise(
+    age_missing = sum(is.na(age)), 
+    ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
+    sex_missing = sum(is.na(sex))
+  )
+
+table(Complex_with_predictors$age)
+table(Complex_with_predictors$ethnicity)
+table(Complex_with_predictors$sex)
+```
+
+I tried using the DifR package, but I was getting error messages that I didn't understand. Moreover, this package uses `ltm` to estimate the model, which gives me very different results from `mirt`. I toyed with the control parameter settings but couldn't get them to produce the same results. 
+
+So I'll use the stuff in MIRT
+```{r}
+mg <- multipleGroup(Complex_short, 1, group = Complex_with_predictors$sex)
+```
+
+```{r}
+DIF(mg, c('a1', 'd'), p.adjust="bonferroni", plotdiff=TRUE)
+```
+
 
 
 ```{r}
-
 ```
-
-
-```{r}
-
-```
-
-

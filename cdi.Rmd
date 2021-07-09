@@ -240,6 +240,10 @@ IG783 <- itemGAM(items_bad$syntax783,Theta)
 IG792 <- itemGAM(items_bad$syntax792,Theta)
 ```
 
+```{r}
+plot(itemGAM(items_good$syntax775, Theta))
+```
+
 Here are the morphology items
 ```{r}
 plot(IG762); plot(IG764); plot(IG769); plot(IG771)
