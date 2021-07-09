@@ -52,11 +52,20 @@ Complex <- Admin %>%
            type == "word_endings_verbs"
          ) %>%
   mutate(
-    out = ifelse(value=="complex" | value=="sometimes" | value=="often" | value=="produces", yes=1, no=0)
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
   ) 
-
 ```
 
+As a quick sanity check, let's see which items have ordinal data
+
+```{r}
+Complex %>%
+  filter(value=="often") %>%
+  group_by(definition) %>%
+  count()
+```
+Ok, it's only the combine variable and word endings variables -- that's right. 
 
 ## Data Screening
 Let's see how many missing values there are. 
@@ -82,6 +91,7 @@ Complex %>%
   summarise(
     mean=mean(out), 
     sd=sd(out),
+    sum=sum(out),
     category = first(complexity_category)
   ) %>%
   arrange(category) %>%
@@ -91,10 +101,6 @@ Complex %>%
 
 Let's also check the distribution of means for each category
 ```{r}
-addline_format <- function(x,...){
-    gsub('\\s','\n',x)
-}
-
 Complex %>%
   filter(!is.na(out)) %>%
   group_by(definition) %>%
@@ -135,7 +141,7 @@ Prior to fitting the IRT model, it's worth looking at the correlation structure 
 
 Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
 ```{r}
-Complex_poly <- tetrachoric(Complex_short)
+Complex_poly <- polychoric(Complex_short)
 
 rho <- Complex_poly$rho
 
@@ -157,14 +163,14 @@ Seems like there are more intermediate points in between the two clouds of vecto
 
 
 ```{r}
-fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
+fa.parallel(rho, fa="fa", cor="poly", n.obs = 2785)
 ```
 Parallel analysis suggests one very large factor and a small second one. Although with these additional items, I'm seeing some convergence complaints that I wasn't seeing before. These dimenionsality tests aren't of substnative interest, so I'm not esepecially worried, but it's worth keeping this in mind for the later models. 
 
 A third metric is very simple structure. This tells us the best solution assuming different values of k, where k is the maximum number of latent variables an observed variable loads on. 
 
 ```{r}
-vss(rho, cor="tet", n.obs = 2785)
+vss(rho, cor="poly", n.obs = 2785)
 ```
 
 Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best. Again, note that the algorithm is difficult to estimate.  
@@ -174,7 +180,7 @@ Very simple structure also suggests one, if we assume each variable loads on one
 ## 2PL model
 Let's first fit the 2pl model and examine the output. 
 ```{r  message=FALSE, warning=FALSE}
-m1 <- mirt(Complex_short, 1, itemtype="2PL")
+m1 <- mirt(Complex_short, 1, itemtype="graded")
 ```
 
 ```{r}
@@ -208,7 +214,7 @@ misfit <- itemfit(m1) %>% # Get labels of mis-fitting items.
 items_good <- dplyr::select(Complex_short, -all_of(misfit$item)) # Well fitting items
 items_bad <- dplyr::select(Complex_short, all_of(misfit$item)) # Poorly fitting items
 
-mod_fit <- mirt(items_good, 1, "2PL", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
+mod_fit <- mirt(items_good, 1, "graded", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
 Theta <- fscores(mod_fit)
 
 
@@ -218,16 +224,18 @@ Theta <- fscores(mod_fit)
 ```{r}
 IG760 <- itemGAM(items_bad$combine760, Theta)
 
-IG761 <- itemGAM(items_bad$morphology761,Theta)
 IG762 <- itemGAM(items_bad$morphology762,Theta)
-IG763 <- itemGAM(items_bad$morphology763,Theta)
 IG769<- itemGAM(items_bad$morphology769,Theta)
+IG771<- itemGAM(items_bad$morphology771,Theta)
 
 
 IG775 <- itemGAM(items_bad$syntax775,Theta)
 IG776 <- itemGAM(items_bad$syntax776,Theta)
-IG789 <- itemGAM(items_bad$syntax789,Theta)
-IG792 <- itemGAM(items_bad$syntax792,Theta)
+IG785 <- itemGAM(items_bad$syntax785,Theta)
+IG787<- itemGAM(items_bad$syntax787,Theta)
+
+IG688 <- itemGAM(items_bad$word_endings688,Theta)
+IG689<- itemGAM(items_bad$word_endings689,Theta)
 ```
 
 Combine
@@ -237,12 +245,17 @@ plot(IG760)
 Flattens out pretty quickly at a difficulty of 0. 
 
 ```{r}
-plot(IG761); plot(IG762); plot(IG763); plot(IG769)
+plot(IG762); plot(IG769); plot(IG771)
 ```
 Syntax items
 ```{r}
-plot(IG775); plot(IG776); plot(IG789); plot(IG792)
+plot(IG775); plot(IG776); plot(IG785); plot(IG787)
 ```
+
+```{r}
+plot(IG688); plot(IG689)
+```
+
 I'm not sure what's happening with item 775. Why is the probability of a correct response lower at the highest values? This wasn't the case before the other variables were added. 
 
  Next let's look at the relationship between the true scores and the raw scores. 
@@ -273,31 +286,33 @@ true_raw/(true_score + raw_score)
 Well, we're getting a little more sensitivity at the lower end of the scale than we had before, and the results are starting to look a bit closer to gaussian-ish. 
 
 Next let's take a look at the difficulty and discrimination parameter for each item. 
+
+This block of code will need to be fixed if I treat variables as ordinal, as the output of coef is now different. 
 ```{r}
-coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
- t() %>%
-  as_tibble() %>%
-  dplyr::select(-c(149:150)) %>%
-  pivot_longer(everything()) %>%
-  separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
-  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
-  dplyr::select(item, a1, d) %>%
-  mutate(
-   category =  gsub('[[:digit:]]+', '', item)
-  )
+#coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
+# t() %>%
+#  as_tibble() %>%
+#  dplyr::select(-c(149:150)) %>%
+#  pivot_longer(everything()) %>%
+#  separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+#  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+#  dplyr::select(item, a1, d) %>%
+#  mutate(
+#   category =  gsub('[[:digit:]]+', '', item)
+#  )
   
-ggplot(coefs_2pl,  
-       aes(x = a1, y = d)) + 
-  geom_point(alpha = .3) + 
-  ggrepel::geom_text_repel(data = coefs_2pl, 
-                  aes(label = item), size = 3) + 
-  xlab("Discrimination") + 
-  ylab("Difficulty") + theme_minimal()
+#ggplot(coefs_2pl,  
+#       aes(x = a1, y = d)) + 
+#  geom_point(alpha = .3) + 
+#  ggrepel::geom_text_repel(data = coefs_2pl, 
+#                  aes(label = item), size = 3) + 
+#  xlab("Discrimination") + 
+#  ylab("Difficulty") + theme_minimal()
 ```
 
 ```{r}
-ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
-ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+#ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+#ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
 ```
 
 ```{r}
@@ -340,7 +355,7 @@ Complex_short <- Complex_short_with_ids %>%
 ```
 
 ```{r}
-Complex_poly <- tetrachoric(Complex_short)
+Complex_poly <- polychoric(Complex_short)
 
 rho <- Complex_poly$rho
 
@@ -360,7 +375,7 @@ plot(pc)
 Looks like there's a big clumb of vectors in one area but then way more pointing out in random directions, which I think will create some fit issues. 
 
 ```{r}
-fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
+fa.parallel(rho, fa="fa", cor="poly", n.obs = 2785)
 ```
 
 
@@ -369,7 +384,7 @@ vss(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
 
 ```{r}
-m2 <- mirt(Complex_short, 1, itemtype="2PL")
+m2 <- mirt(Complex_short, 1, itemtype="graded")
 
 summary(m2)
 
@@ -378,16 +393,14 @@ M2(m2)
 
 
 ```{r}
-m2b <- mirt(Complex_short, 2, "2PL")
+m2b <- mirt(Complex_short, 2, "graded")
 ```
 
 ```{r}
 summary(m2b, "oblimin", suppress=.20)
 ```
-```{r}
-m2c <- mirt(Complex_short, 1, "3PLu")
 
-```
+
 It looks like the word forms are loading consistently on a different factor from the morphosyntactic complexity factor. 
 
 
@@ -410,7 +423,7 @@ Complex_short <- Complex_short_with_ids %>%
 
 
 ```{r}
-Complex_poly <- tetrachoric(Complex_short)
+Complex_poly <- polychoric(Complex_short)
 
 rho <- Complex_poly$rho
 
@@ -429,14 +442,9 @@ vss(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
 
 ```{r}
-m3b <- mirt(Complex_short, 2, "2PL")
+m3b <- mirt(Complex_short, 2, "graded")
 summary(m3b, "oblimin", suppress=.20)
 ```
-```{r}
-m3c <- mirt(Complex_short, 1, "3PLu")
-summary(m3c, "oblimin", suppress=.20)
-```
-
 
 As was the case with the word form variables, all of the word endings variables loaded onto a separate factor from the morphosyntactic complexity variables.  
 
@@ -472,10 +480,12 @@ Complex_short <- Complex_short_with_ids %>%
 ```{r}
 summary(m1)
 ```
-
+```{r}
+M2(m1)
+```
 ## More formal tests of the dimensionality 
 ```{r}
-m1b <- mirt(Complex_short, 2, "2PL")
+m1b <- mirt(Complex_short, 2, "graded")
 ```
 
 ```{r}
@@ -488,12 +498,9 @@ summary(m1b, "oblimin", suppress=.2)
 
 We have a similar solution to what we had in the first version of this analysis. The factor model fits better but it's not at all clear what the second factor is adding. Everything loads strongly on the first factor and very little on the second factor. 
 
-Three parameter model with inverse guessing parameter. 
+
 ```{r}
-m1c <- mirt(Complex_short, 1, "3PLu")
-```
-```{r}
-anova(m1c, m1)
+anova(m1b, m1)
 ```
 
 Model fits a little better, but the guessing parameters were all above .9 so I don't think those are adding very much. 
@@ -501,7 +508,7 @@ Model fits a little better, but the guessing parameters were all above .9 so I d
 
 Comapre with 1 factor 2PL model with semi-parametric latent variable specification. 
 ```{r}
-m1_nonpar <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EH")
+m1_nonpar <- mirt(Complex_short, 1, itemtype="graded", dentype = "EH")
 
 M2(m1_nonpar)
 ```
@@ -518,7 +525,7 @@ Complex_short %>%
 
 
 ```{r}
-m1_nonpar2 <- mirt(Complex_short, 1, itemtype="2PL", dentype = "EHW")
+m1_nonpar2 <- mirt(Complex_short, 1, itemtype="graded", dentype = "EHW")
 
 M2(m1_nonpar2)
 ```
@@ -532,10 +539,7 @@ Complex_short %>%
   ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 ```
 
-These semi-parametric alternatives look pretty similar. 
-
-
-
+These semi-parametric alternatives look pretty similar. I think in both cases, the Gaussian model is a bit easier to interpret and will likely make it easier to work with other functionality. 
 
 
 
@@ -550,9 +554,6 @@ by_Participant <-Complex_short_with_ids %>%
   group_by(data_id) %>%
   slice(1)
 ```
-
-
-
 
 
 ```{r}
@@ -602,7 +603,7 @@ Complex_short <- Complex_short_with_ids %>%
 Complex_with_predictors <- Admin %>%
   dplyr::select(data_id, age, ethnicity, sex) %>%
   mutate(
-    female = ifelse(sex=="female", yes=1, no=0)
+    female = ifelse(sex=="Female", yes=1, no=0)
   ) %>%
   right_join(., Complex_short_with_ids, by="data_id")
 ```
@@ -622,15 +623,34 @@ table(Complex_with_predictors$sex)
 
 I tried using the DifR package, but I was getting error messages that I didn't understand. Moreover, this package uses `ltm` to estimate the model, which gives me very different results from `mirt`. I toyed with the control parameter settings but couldn't get them to produce the same results. 
 
-So I'll use the stuff in MIRT
+So I'll use lordif 
 ```{r}
-mg <- multipleGroup(Complex_short, 1, group = Complex_with_predictors$sex)
+Complex_short2 <- data.frame(Complex_short) 
+
+sex <- data.frame(t = Complex_with_predictors$sex)
+
+dif <- lordif(Complex_short2, 
+              Complex_with_predictors$female,
+              criterion="Chisqr", 
+              alpha = .01)
+```
+Only 2 items out of 41 have dif by gender. That's really interesteined. 
+
+```{r}
+dif
 ```
 
 ```{r}
-DIF(mg, c('a1', 'd'), p.adjust="bonferroni", plotdiff=TRUE)
+plot(dif)
 ```
 
+
+```{r}
+```
+
+
+```{r}
+```
 
 
 ```{r}
