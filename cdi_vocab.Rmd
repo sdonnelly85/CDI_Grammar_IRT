@@ -1,0 +1,185 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS")
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+
+```{r format data}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>%
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+```
+
+```{r count NAs}
+Complex %>%
+  filter(is.na(out)) %>%
+  group_by(definition) %>%
+  count()
+```
+
+```{r Summary Tables}
+Complex %>% 
+  filter(!is.na(out)) %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    sd=sd(out),
+    category = first(lexical_category)
+  ) %>%
+  arrange(category) %>%
+  kable(caption="Means and SDs for Each Item (Arranged by Item)")
+```
+
+
+```{r}
+Complex %>% 
+  filter(!is.na(out)) %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    sd=sd(out),
+    category = first(lexical_category)
+  ) %>%
+  ggplot(aes(x=mean, fill=category)) + geom_histogram()
+```
+
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, lexical_category, num_item_id) %>%
+  mutate(
+    label = str_c(lexical_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
+
+
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(-"data_id") # dataset for IRT can't have IDs
+```
+
+
+I'm not going to bother with the correlation plot because I think it will be too difficult to visualize. 
+```{r}
+Complex_poly <- tetrachoric(Complex_short)
+
+rho <- Complex_poly$rho
+```
+
+```{r}
+pc <- princals(rho)
+
+plot(pc)
+```
+
+```{r}
+fa.parallel(rho, fa="fa", cor="poly", n.obs = 4186)
+```
+
+```{r}
+m1 <- mirt(Complex_short, 1, itemtype="2PL") 
+```
+
+```{r}
+m1
+```
+
+```{r}
+itf <- itemfit(m1)
+```
+
+
+```{r}
+misfit <- itf  %>% # Get labels of mis-fitting items. 
+  filter(p.S_X2 <= .01) %>%
+  dplyr::select(item) %>%
+  as.vector()
+
+items_good <- dplyr::select(Complex_short, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Complex_short, all_of(misfit$item)) # Poorly fitting items
+
+mod_fit <- mirt(items_good, 1, "2PL", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
+Theta <- fscores(mod_fit)
+```
+
+```{r}
+plot(itemGAM(items_bad$nouns21, Theta))
+plot(itemGAM(items_bad$nouns23,Theta))
+plot(itemGAM(items_bad$nouns27,Theta)) #
+plot(itemGAM(items_bad$nouns37,Theta))
+plot(itemGAM(items_bad$nouns115,Theta)) #
+plot(itemGAM(items_bad$nouns123,Theta))
+plot(itemGAM(items_bad$nouns146,Theta)) #
+plot(itemGAM(items_bad$nouns179,Theta)) #
+plot(itemGAM(items_bad$nouns204,Theta)) #
+plot(itemGAM(items_bad$nouns213,Theta))
+plot(itemGAM(items_bad$nouns222,Theta))
+plot(itemGAM(items_bad$nouns231,Theta)) #
+plot(itemGAM(items_bad$nouns238,Theta))
+plot(itemGAM(items_bad$nouns253,Theta))
+plot(itemGAM(items_bad$nouns273,Theta))
+```
+
+```{r}
+plot(itemGAM(items_bad$predicates433, Theta))
+plot(itemGAM(items_bad$predicates460,Theta))
+plot(itemGAM(items_bad$predicates469,Theta))
+plot(itemGAM(items_bad$predicates492,Theta))
+plot(itemGAM(items_bad$predicates514,Theta))
+plot(itemGAM(items_bad$predicates543,Theta))
+plot(itemGAM(items_bad$predicates551,Theta))
+```
+
+```{r}
+plot(itemGAM(items_bad$other578,Theta))
+plot(itemGAM(items_bad$function_words586,Theta))
+plot(itemGAM(items_bad$function_words589,Theta))
+plot(itemGAM(items_bad$function_words597,Theta))
+```
+
+```{r}
+true_raw <- Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:680]), 
+    Theta = fscores(m1)
+  ) %>%
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+
+raw_score <- Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:42])
+    ) %>% 
+   ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
+
+true_score <- Complex_short %>%
+  mutate(
+    Theta = fscores(m1)
+    ) %>% 
+   ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
+
+library(patchwork)
+
+true_raw/(true_score + raw_score) 
+```
+
+```{r}
+m2 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW") 
+```
+
+```{r}
+```
+

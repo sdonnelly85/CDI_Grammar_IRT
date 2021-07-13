@@ -16,17 +16,16 @@ library(wordbankr) # WB data
 library(tidyverse) # tidy
 library(mirt) # IRT models
 library(ltm) # more IRT functions
-#library(difr) # some differential item functioning tools. 
 library(psych) # some psychometric stuff (tests of dimensionality)
 library(Gifi)# some more psychometric stuff (tests of dimensionality)
 library(knitr) # some formatting, tables, etc
 library(patchwork) # combining plots. 
 library(GGally) # More plottinng options. 
-library()
+library(lordif) # differential item functioning.
 ```
 
 
-In our meeting on 28/June/2021, we noted that by adding Word Forms, we might be able to model some of the intermediate levels of syntactic proficiency between the 0 and 1 item by adding word forms. I'm going to start with adding word endings and combines as those seem like the most straight forward. The problem with the word forms and word endings is that we expect them to by non-monotonically related to language proficiency, so I'm no sure how well they'll fit this model. 
+In our meeting on 28/June/2021, we noted that by adding Word Forms, we might be able to model some of the intermediate levels of syntactic proficiency between the 0 and 1 items on the complexity scale. I'm going to start with adding word endings and combines as those seem like the most straight forward. The problem with the word forms and word endings is that we expect them to by non-monotonically related to language proficiency, so I'm no sure how well they'll fit this model. I've also made a new branch on github because I realized I could maintain the ordinal scale of the ordinal items, and use an ordinal IRT model -- since binary items are just ordinal items with 2 categories. This appears to be working alright, but I want to keep it in a second branch until I verify this is appropriate (I'm 95% sure it's right). 
 
 
 Download data from Word Bank:
@@ -36,6 +35,8 @@ Admin <- get_administration_data(language="English (American)", form="WS")
 Item <- get_item_data(language="English (American)", form = "WS")
 ```
 
+
+The American English CDI data has 7 types of items other than words, which are also listed in the code above: *combine*, *complexity*, *word_endings*, *word_forms_nouns*, *word_forms_verbs*, *word_endings_nouns*, and *word_endings_verbs*. The *word_endings* type seems to be questions about how often a child applies a particular morphological rule (e.g., adding an s to possessives). The *word_forms_verbs* and *word_forms_nouns* seem to be about whether a child can produce specific irregular past tenses or plurals. The *word_endings_nouns* and *word_endings_verbs* seem to be about overregularizations on nouns and verbs.  
 
 Combine data sets. Create binary variable for accuracy.  
 ```{r format data}
@@ -57,8 +58,8 @@ Complex <- Admin %>%
   ) 
 ```
 
-As a quick sanity check, let's see which items have ordinal data
 
+As a quick sanity check, let's see which items have ordinal data (to make sure the above code worked correctly). 
 ```{r}
 Complex %>%
   filter(value=="often") %>%
@@ -66,6 +67,7 @@ Complex %>%
   count()
 ```
 Ok, it's only the combine variable and word endings variables -- that's right. 
+
 
 ## Data Screening
 Let's see how many missing values there are. 
@@ -76,7 +78,7 @@ Complex %>%
   count() 
 ```
 
-Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word froms, 1 who doesn't have word endings. 
+Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word forms, and 1 who doesn't have word endings. 
 
 
 ```{r Drop NAs}
@@ -107,18 +109,17 @@ Complex %>%
   summarise(
     mean=mean(out), 
     category = first(complexity_category),
-    cat2 = str_replace(category, "_", "" ) %>% str_replace("_", "" ) 
+    cat2 = str_replace(category, "_", " " ) %>% str_replace("_", "\n" ) 
   ) %>%
-  ggplot(aes(x=category, y= mean)) + geom_boxplot() 
+  ggplot(aes(x=cat2, y= mean)) + geom_boxplot() 
 ```
 
-It seems like the word endings (possses s, etc) and the combine words variable have higher means than the morphological and syntactic complexity items. The overregularization items 
-have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
+It seems like the word endings and the combine words variable have higher means than the morphological and syntactic complexity items (though they are ordinal, but when I treated these as binary in an older version the results were the same). The over-regularization items have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
 
 
-On difficulty I just thought of is that the we would expect the word form and over-regularizations to be non-monotonially related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
+One difficulty I just thought of is that the we would expect the word form and over-regularizations to be non-monotonially related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
 
-I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
+Therefore, I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
 
 ## Data Preparation
 Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
@@ -162,25 +163,25 @@ plot(pc)
 Seems like there are more intermediate points in between the two clouds of vectors I saw with the earlier version of the data set. However, the plot has fipped, so that most of the vectors are pointing toward the positive first component. 
 
 
-```{r}
+```{r , message=FALSE, error=FALSE}
 fa.parallel(rho, fa="fa", cor="poly", n.obs = 2785)
 ```
-Parallel analysis suggests one very large factor and a small second one. Although with these additional items, I'm seeing some convergence complaints that I wasn't seeing before. These dimenionsality tests aren't of substnative interest, so I'm not esepecially worried, but it's worth keeping this in mind for the later models. 
+Parallel analysis suggests one very large factor and a small second one. Although with these additional items, I'm seeing some convergence complaints that I wasn't seeing before. These dimensionality tests aren't of substantive interest, so I'm not especially worried, but it's worth keeping this in mind for the later models. 
 
 A third metric is very simple structure. This tells us the best solution assuming different values of k, where k is the maximum number of latent variables an observed variable loads on. 
 
-```{r}
+```{r, message=FALSE, error=FALSE}
 vss(rho, cor="poly", n.obs = 2785)
 ```
 
-Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best. Again, note that the algorithm is difficult to estimate.  
+Very simple structure also suggests one, if we assume each variable loads on one factor only. If we assume everything loads on 2 factors then a 2 factor solution is best. Again, note that the algorithm is having difficulty with estimation.   
 
 # IRT Modeling
 
 ## 2PL model
 Let's first fit the 2pl model and examine the output. 
 ```{r  message=FALSE, warning=FALSE}
-m1 <- mirt(Complex_short, 1, itemtype="graded")
+m1 <- mirt(Complex_short, 1, itemtype="graded", verbose=FALSE) # graded because we are treating all variables as ordinal. 
 ```
 
 ```{r}
@@ -256,9 +257,8 @@ plot(IG775); plot(IG776); plot(IG785); plot(IG787)
 plot(IG688); plot(IG689)
 ```
 
-I'm not sure what's happening with item 775. Why is the probability of a correct response lower at the highest values? This wasn't the case before the other variables were added. 
 
- Next let's look at the relationship between the true scores and the raw scores. 
+Next let's look at the relationship between the true scores and the raw scores. 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
@@ -287,7 +287,7 @@ Well, we're getting a little more sensitivity at the lower end of the scale than
 
 Next let's take a look at the difficulty and discrimination parameter for each item. 
 
-This block of code will need to be fixed if I treat variables as ordinal, as the output of coef is now different. 
+Note to self: This block of code will need to be fixed if I treat variables as ordinal, as the output of `coef` is now different. 
 ```{r}
 #coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
 # t() %>%
@@ -315,6 +315,9 @@ This block of code will need to be fixed if I treat variables as ordinal, as the
 #ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
 ```
 
+
+
+I was worried that the over-regularization and irregular items would be non-monotonically related to the factor scores, since we expect children to go through qualitatively distinct stages. So I summed these sections and plotted them against the factor score below. 
 ```{r}
 Theta_by_Wordforms <- Complex_short_with_ids %>%
   mutate(
@@ -374,17 +377,17 @@ plot(pc)
 ```
 Looks like there's a big clumb of vectors in one area but then way more pointing out in random directions, which I think will create some fit issues. 
 
-```{r}
+```{r, message=FALSE, error=FALSE}
 fa.parallel(rho, fa="fa", cor="poly", n.obs = 2785)
 ```
 
 
-```{r}
+```{r, message=FALSE, error=FALSE}
 vss(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
 
 ```{r}
-m2 <- mirt(Complex_short, 1, itemtype="graded")
+m2 <- mirt(Complex_short, 1, itemtype="graded", verbose=FALSE)
 
 summary(m2)
 
@@ -393,7 +396,7 @@ M2(m2)
 
 
 ```{r}
-m2b <- mirt(Complex_short, 2, "graded")
+m2b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 ```
 
 ```{r}
@@ -436,13 +439,13 @@ pc <- princals(rho)
 plot(pc)
 ```
 
-```{r}
+```{r, message=FALSE, error=FALSE}
 fa.parallel(rho, fa="fa", cor="tet", n.obs = 2785)
 vss(rho, fa="fa", cor="tet", n.obs = 2785)
 ```
 
 ```{r}
-m3b <- mirt(Complex_short, 2, "graded")
+m3b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 summary(m3b, "oblimin", suppress=.20)
 ```
 
@@ -451,7 +454,7 @@ As was the case with the word form variables, all of the word endings variables 
 
 # Quick Interim Summary
 
-So a quick re-cap: The word form variables and overgeneralization variables had similar means to the morphosyntactic complexity variables, which were generally lower than the means of the word combination variable or the general word endings variables. I was concerned about including the word form and overgeneralization variables to the IRT models because they are theoretically non-monotonically related to syntactic proficiency. We would expect children to initially produce high frequency irregular forms, then go through a stage of over-regularization, and finally to produce the correct irregular word forms again. However, when I plotted the total scores on these subscales against a syntactic proficiency variable derived from the other subscales, I did not see evidence of a non-monotonic relationship. Rather in both cases, subscale scores increased with increasing syntactic proficiency. 
+So a quick re-cap: I was concerned about including the word form and over-regularizations variables to the IRT models because they are theoretically non-monotonically related to syntactic proficiency. We would expect children to initially produce high frequency irregular forms, then go through a stage of over-regularization, and finally to produce the correct irregular word forms again. However, when I plotted the total scores on these subscales against a syntactic proficiency variable derived from the other subscales, I did not see evidence of a non-monotonic relationship. Rather in both cases, subscale scores increased with increasing syntactic proficiency, though it appeared to be leveling off for the over-regularizations.  
 
 I then tried fitting two more models, one that included the word form variables and another that included the overgeneralization variables. Exploration of the dimensionality suggested that adding these variables resulted in a much clearer multi-dimensional structure (see categorical PCAs and scree plots). In both cases, exploratory two dimensional IRTs indicated two-factor solutions in which one factor was dominated by the morphosyntactic complexity variables and the other was dominated by the word form or overregularization variables. 
 
@@ -462,7 +465,7 @@ It's difficult to say exactly what this means, as these results could plausibly 
 
 I think I'm going to stick with the model that includes the complexity variable and the word endings variables as they seem to increase the sensitivity of the model to lower proficiency children and do not appear to affect the dimensionality much. 
 
-Get the dataset back. 
+Get the data set back. 
 ```{r}
 Complex_short_with_ids <- Complex %>% 
   dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
@@ -485,7 +488,7 @@ M2(m1)
 ```
 ## More formal tests of the dimensionality 
 ```{r}
-m1b <- mirt(Complex_short, 2, "graded")
+m1b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 ```
 
 ```{r}
@@ -495,20 +498,12 @@ anova(m1, m1b)
 ```{r}
 summary(m1b, "oblimin", suppress=.2)
 ```
-
 We have a similar solution to what we had in the first version of this analysis. The factor model fits better but it's not at all clear what the second factor is adding. Everything loads strongly on the first factor and very little on the second factor. 
 
 
+Comapre with 1 factor graded model with semi-parametric latent variable specification. 
 ```{r}
-anova(m1b, m1)
-```
-
-Model fits a little better, but the guessing parameters were all above .9 so I don't think those are adding very much. 
-
-
-Comapre with 1 factor 2PL model with semi-parametric latent variable specification. 
-```{r}
-m1_nonpar <- mirt(Complex_short, 1, itemtype="graded", dentype = "EH")
+m1_nonpar <- mirt(Complex_short, 1, itemtype="graded", dentype = "EH", verbose=FALSE)
 
 M2(m1_nonpar)
 ```
@@ -525,7 +520,7 @@ Complex_short %>%
 
 
 ```{r}
-m1_nonpar2 <- mirt(Complex_short, 1, itemtype="graded", dentype = "EHW")
+m1_nonpar2 <- mirt(Complex_short, 1, itemtype="graded", dentype = "EHW", verbose=FALSE)
 
 M2(m1_nonpar2)
 ```
@@ -542,7 +537,110 @@ Complex_short %>%
 These semi-parametric alternatives look pretty similar. I think in both cases, the Gaussian model is a bit easier to interpret and will likely make it easier to work with other functionality. 
 
 
+# Measurement invariance. 
 
+I mentioned in the last meeting that these models assume measusrement invariance -- basically the probability of producing an item is the same for two children of the same estimated ability who differ according to some other grouping variable. I have begun to assess this, using differential item functioning technques using some of the predictors in the data set. I should say, I'm out over my skis a bit here at this point. 
+
+
+
+Create data sets with predictor variables for 
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  dplyr::select(data_id, label, out) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
+```
+
+```{r}
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
+```
+
+
+```{r}
+Complex_with_predictors <- Admin %>%
+  dplyr::select(data_id, age, ethnicity, sex) %>%
+  mutate(
+    female = ifelse(sex=="Female", yes=1, no=0),
+    age_y = ifelse(age < 25, yes=1, no=0)
+  ) %>%
+  right_join(., Complex_short_with_ids, by="data_id")
+```
+
+```{r}
+Complex_with_predictors %>%
+  summarise(
+    age_missing = sum(is.na(age)), 
+    ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
+    sex_missing = sum(is.na(sex))
+  )
+
+table(Complex_with_predictors$age)
+table(Complex_with_predictors$ethnicity)
+table(Complex_with_predictors$sex)
+```
+
+
+Use lordif to look for DIF. I'll start with sex first. I've not included the code here, the lordif function, which I used, does not allow verbose=FALSE so it produces a lot of extra information. 
+```{r, include=FALSE}
+Complex_short2 <- data.frame(Complex_short) 
+
+sex <- data.frame(t = Complex_with_predictors$sex)
+
+dif <- lordif(Complex_short2, 
+              Complex_with_predictors$female,
+              criterion="Chisqr", 
+              alpha = .01)
+```
+
+```{r}
+dif
+```
+
+```{r}
+plot(dif)
+```
+
+Only two items have DIF and they look pretty similar across the two groups te be honest. 
+
+
+I've turned off the code
+I'll median-split the sample by age, and look for DIF there
+
+```{r, include=FALSE}
+Complex_short2 <- data.frame(Complex_short) 
+
+dif <- lordif(Complex_short2, 
+              Complex_with_predictors$age_y,
+              criterion="Chisqr", 
+              alpha = .01)
+```
+
+Every single item has Dif:
+```{r}
+dif
+```
+
+I can't get plots I had above, because every item has dif -- the factor scores can't be equated in any reasonable way. 
+
+Plot the distribution of scores by age group to see what's going on. 
+
+```{r}
+Complex_with_predictors %>%
+  dplyr::select(starts_with(c("morphology", "syntax", "combine")) , c("word_endings686", "word_endings687", "word_endings688", "word_endings689",  "age_y")) %>%
+  mutate(
+    mean = rowSums(.[1:42])
+  ) %>%
+  ggplot(aes(y=mean, x=as.factor(age_y))) + geom_boxplot()
+```
+There are a lot of 0s in the low vocabulary group. I suspect this makes the IRT model difficult to estimate for them, leading to the DIF issues aboe. 
+
+
+# Plot Theta against age and vocabulary. 
 ```{r}
 by_Participant <-Complex_short_with_ids %>% 
   mutate(
@@ -554,7 +652,6 @@ by_Participant <-Complex_short_with_ids %>%
   group_by(data_id) %>%
   slice(1)
 ```
-
 
 ```{r}
 theta_by_age <- by_Participant %>%
@@ -579,79 +676,22 @@ theta_by_prod | raw_by_prod
 
 ```
 
-# Examining Measurement Invariance. 
-
-Create data sets with predictor variables for 
 ```{r}
-Complex_short_with_ids <- Complex %>% 
-  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
-  mutate(
-    label = str_c(complexity_category, num_item_id)
-  ) %>%
-  dplyr::select(data_id, label, out) %>%
-  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
-  drop_na()
-```
-
-```{r}
-Complex_short <- Complex_short_with_ids %>%
-  dplyr::select(starts_with(c("combine", "morphology", "syntax")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
+sessionInfo()
 ```
 
 
-```{r}
-Complex_with_predictors <- Admin %>%
-  dplyr::select(data_id, age, ethnicity, sex) %>%
-  mutate(
-    female = ifelse(sex=="Female", yes=1, no=0)
-  ) %>%
-  right_join(., Complex_short_with_ids, by="data_id")
-```
-
-```{r}
-Complex_with_predictors %>%
-  summarise(
-    age_missing = sum(is.na(age)), 
-    ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
-    sex_missing = sum(is.na(sex))
-  )
-
-table(Complex_with_predictors$age)
-table(Complex_with_predictors$ethnicity)
-table(Complex_with_predictors$sex)
-```
-
-I tried using the DifR package, but I was getting error messages that I didn't understand. Moreover, this package uses `ltm` to estimate the model, which gives me very different results from `mirt`. I toyed with the control parameter settings but couldn't get them to produce the same results. 
-
-So I'll use lordif 
-```{r}
-Complex_short2 <- data.frame(Complex_short) 
-
-sex <- data.frame(t = Complex_with_predictors$sex)
-
-dif <- lordif(Complex_short2, 
-              Complex_with_predictors$female,
-              criterion="Chisqr", 
-              alpha = .01)
-```
-Only 2 items out of 41 have dif by gender. That's really interesteined. 
-
-```{r}
-dif
-```
-
-```{r}
-plot(dif)
-```
 
 
-```{r}
-```
 
 
-```{r}
-```
 
 
-```{r}
-```
+
+
+
+
+
+
+
+
