@@ -1,8 +1,17 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: Psychometric modeling of the Syntactic Vocabulary of the CDI
+author: Seamus Donnelly
+date created: July 5, 2021
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
+Note to self: these models take a long time to run, so, rather than estimating them each time I run the code, I've saved the models, commented out teh code for running the models, and included the code for opening the models. Be **EXTRA CAREFUL** that the saved models are the most up to date.  
 ```{r}
 library(wordbankr) # WB data
 library(tidyverse) # tidy
@@ -71,11 +80,9 @@ Complex %>%
 
 ```{r}
 Complex_short_with_ids <- Complex %>% 
-  dplyr::select(data_id, value, out, lexical_category, num_item_id) %>%
-  mutate(
-    label = str_c(lexical_category, num_item_id)
-  ) %>%
-  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") %>%
   drop_na()
 
 
@@ -90,7 +97,7 @@ Complex_poly <- tetrachoric(Complex_short)
 
 rho <- Complex_poly$rho
 ```
-
+These will not run. 
 ```{r}
 pc <- princals(rho)
 
@@ -102,15 +109,21 @@ fa.parallel(rho, fa="fa", cor="poly", n.obs = 4186)
 ```
 
 ```{r}
-m1 <- mirt(Complex_short, 1, itemtype="2PL") 
+#m1 <- mirt(Complex_short, 1, itemtype="2PL") 
+m1 <- readRDS("vocab_output/m1.rds")
 ```
 
 ```{r}
 m1
 ```
+```{r}
+#saveRDS(m1, "vocab_output/m1.rds")
+```
 
 ```{r}
-itf <- itemfit(m1)
+#itf <- itemfit(m1)
+#saveRDS(itf, "vocab_output/itf.rds")
+itf <- readRDS("vocab_output/itf.rds")
 ```
 
 
@@ -128,51 +141,46 @@ Theta <- fscores(mod_fit)
 ```
 
 ```{r}
-plot(itemGAM(items_bad$nouns21, Theta))
-plot(itemGAM(items_bad$nouns23,Theta))
-plot(itemGAM(items_bad$nouns27,Theta)) #
-plot(itemGAM(items_bad$nouns37,Theta))
-plot(itemGAM(items_bad$nouns115,Theta)) #
-plot(itemGAM(items_bad$nouns123,Theta))
-plot(itemGAM(items_bad$nouns146,Theta)) #
-plot(itemGAM(items_bad$nouns179,Theta)) #
-plot(itemGAM(items_bad$nouns204,Theta)) #
-plot(itemGAM(items_bad$nouns213,Theta))
-plot(itemGAM(items_bad$nouns222,Theta))
-plot(itemGAM(items_bad$nouns231,Theta)) #
-plot(itemGAM(items_bad$nouns238,Theta))
-plot(itemGAM(items_bad$nouns253,Theta))
-plot(itemGAM(items_bad$nouns273,Theta))
+plot(itemGAM(items_bad$dog, Theta)) %>% update(main = "dog")
+plot(itemGAM(items_bad$donkey,Theta)) %>% update(main = "donkey")
+plot(itemGAM(items_bad$teddybear,Theta)) %>% update(main = "teddybear")
+plot(itemGAM(items_bad$block,Theta)) %>% update(main = "block")
+plot(itemGAM(items_bad$doll,Theta)) %>% update(main = "doll")
+plot(itemGAM(items_bad$`toy (object)`,Theta)) %>% update(main = "toy (object)")
+plot(itemGAM(items_bad$beans,Theta)) %>% update(main = "beans") 
+plot(itemGAM(items_bad$raisin,Theta)) %>% update(main = "raisin") 
+plot(itemGAM(items_bad$underpants,Theta)) %>% update(main = "underpants") 
+plot(itemGAM(items_bad$`penis*`,Theta)) %>% update(main = "penis") 
+plot(itemGAM(items_bad$`vagina*`,Theta)) %>% update(main = "vagina")
+plot(itemGAM(items_bad$clock,Theta)) %>% update(main = "clock") 
+plot(itemGAM(items_bad$dish,Theta)) %>% update(main = "dish")
+plot(itemGAM(items_bad$keys,Theta)) %>% update(main = "keys")
+plot(itemGAM(items_bad$plate,Theta)) %>% update(main = "plate")
+plot(itemGAM(items_bad$trash,Theta)) %>% update(main = "trash")
+plot(itemGAM(items_bad$bathtub,Theta)) %>% update(main = "bathtub")
+plot(itemGAM(items_bad$TV,Theta)) %>% update(main = "TV")
 ```
 
-```{r}
-plot(itemGAM(items_bad$predicates433, Theta))
-plot(itemGAM(items_bad$predicates460,Theta))
-plot(itemGAM(items_bad$predicates469,Theta))
-plot(itemGAM(items_bad$predicates492,Theta))
-plot(itemGAM(items_bad$predicates514,Theta))
-plot(itemGAM(items_bad$predicates543,Theta))
-plot(itemGAM(items_bad$predicates551,Theta))
-```
 
 ```{r}
-plot(itemGAM(items_bad$other578,Theta))
-plot(itemGAM(items_bad$function_words586,Theta))
-plot(itemGAM(items_bad$function_words589,Theta))
-plot(itemGAM(items_bad$function_words597,Theta))
+plot(itemGAM(items_bad$catch, Theta)) %>% update(main = "catch")
+plot(itemGAM(items_bad$fit,Theta))  %>% update(main = "fit")
+plot(itemGAM(items_bad$get,Theta)) %>% update(main = "get")
+plot(itemGAM(items_bad$go,Theta)) %>% update(main = "go")
+plot(itemGAM(items_bad$read,Theta)) %>% update(main = "read")
 ```
 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680]), 
+    Raw = rowSums(.[,1:478]), 
     Theta = fscores(m1)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
 raw_score <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680])
+    Raw = rowSums(.[,1:478])
     ) %>% 
    ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
 
@@ -187,22 +195,56 @@ library(patchwork)
 true_raw/(true_score + raw_score) 
 ```
 
+
+
 ```{r}
-m2 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW") 
+coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(1913:1914)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  filter(parameter == "a1" | parameter == "d" ) %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) 
+
+ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + # Note in the book they use -d here, I think MIRT outputs a1 and -d
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+
+This is fairly different from the distrbution in the Frank Book. In particular, the difficulty parameters are 
+
+
+
+```{r}
+#ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+#ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+```
+
+
+
+```{r}
+#m2 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW") 
+#saveRDS(m2, "vocab_output/m2.rds")
+m2 <- readRDS("vocab_output/m2.rds")
 ```
 
 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680]), 
+    Raw = rowSums(.[,1:478]), 
     Theta = fscores(m2)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
 raw_score <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680])
+    Raw = rowSums(.[,1:478])
     ) %>% 
    ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
 
@@ -220,19 +262,21 @@ true_raw/(true_score + raw_score)
 
 ```{r}
 m2b <- mirt(Complex_short, 1, itemtype="2PL", dentype="EH") 
+saveRDS(m2b, "vocab_output/m2b.rds")
+#  m2b <- readRDS("vocab_output/m2b.rds")
 ```
 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680]), 
+    Raw = rowSums(.[,1:478]), 
     Theta = fscores(m2b)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
 raw_score <- Complex_short %>%
   mutate(
-    Raw = rowSums(.[,1:680])
+    Raw = rowSums(.[,1:478])
     ) %>% 
    ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
 
@@ -248,12 +292,92 @@ true_raw/(true_score + raw_score)
 ```
 
 ```{r}
-M2(m2b)
+anova(m2b, m1)
+```
+
+
+Compare this to a model with 2 dimensions. 
+```{r}
+#m3 <- mirt(Complex_short, 2, itemtype="2PL", maxit=2000) 
+```
+
+```{r}
+#anova(m3, m1)
+```
+
+```{r}
+#model.1 <- mirt.model('
+#                      F1 = 1 - 312
+#                      F2 = 313 - 478
+#                      COV=F1*F2')
+
+#m4 <- mirt(Complex_short, model.1, "2PL", verbose=FALSE)
+
+
+#summary(m4)
 ```
 
 
 ```{r}
-m3 <- mirt(Complex_short, 2, itemtype="2PL") 
+#anova(m4, m3)
+```
+
+```{r}
+Complex_with_predictors <- Admin %>%
+  dplyr::select(data_id, age, ethnicity, sex, mom_ed) %>%
+  mutate(
+    female = ifelse(sex=="Female", yes=1, no=0),
+   age_y = ifelse(age < 25, yes=1, no=0),
+   college_grad = ifelse(mom_ed %in% c("College", "Some Graduate",  "Some Graduate"), yes=1, no=0)
+   ) %>%
+  right_join(., Complex_short_with_ids, by="data_id")
+```
+
+
+```{r}
+Complex_with_predictors %>%
+  summarise(
+    age_missing = sum(is.na(age)), 
+    ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
+    sex_missing = sum(is.na(sex)), 
+    college_grad = sum(is.na(college_grad))
+  )
+
+table(Complex_with_predictors$age)
+table(Complex_with_predictors$ethnicity)
+table(Complex_with_predictors$sex)
+table(Complex_with_predictors$college_grad)
+```
+
+```{r}
+Complex_short2 <- data.frame(Complex_short) 
+
+#dif <- lordif(Complex_short2, 
+#              Complex_with_predictors$female,
+#              criterion="Chisqr", 
+#              alpha = .01)
+
+saveRDS(dif, "vocab_output/dif.rds")
+dif  <- readRDS("vocab_output/dif.rds")
+```
+```{r}
+dif
+```
+```{r}
+plot(dif)
+```
+A lot o items were flagged, but given the relatively small values of the diference beween intial and pure variables I'm not overly concerned. 
+```{r}
+#dif2 <- lordif(Complex_short2, 
+              Complex_with_predictors$college_grad,
+              criterion="Chisqr", 
+              alpha = .01)
+#saveRDS(dif2, "vocab_output/dif2.rds")
+dif2  <- readRDS("vocab_output/dif2.rds")
+```
+
+```{r}
+plot(dif2)
 ```
 
 ```{r}
@@ -261,7 +385,6 @@ m3 <- mirt(Complex_short, 2, itemtype="2PL")
 
 ```{r}
 ```
-
 
 ```{r}
 ```
