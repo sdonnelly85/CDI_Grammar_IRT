@@ -1,0 +1,613 @@
+---
+title: Psychometric modeling of the Syntactic Complexity Scale of the CDI
+author: Seamus Donnelly
+date created: "October, 26, 2021"
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r message=FALSE, warning=FALSE}
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(ltm) # more IRT functions
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(GGally) # More plottinng options. 
+library(lordif) # differential item functioning.
+library(sirt) # additional IRT functions
+library(vegan)
+```
+
+In our meeting on 01/09/2021, we discussed the possibility that our sample was a mixture of children, grammatical kids and pre-grammatical kids. We said one way to remove the pre-grammatical kids would be to exclude kids who have a 0 on the variable indicating whether children combine words. Additionaly in a meeting with Jay we discussed a problematic pattern of discrimination parameters--in particular there was a strong correlation between discrimination and difficulty parameters. This could reflect a problematic 
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS")
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+```{r}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>%
+  filter(type == "combine" | 
+           type == "complexity" |
+           type == "word_endings" |
+           type== "word_forms_nouns" |
+           type == "word_forms_verbs" | 
+           type == "word_endings_nouns" |
+           type == "word_endings_verbs"
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity" |
+           type == "word_endings" |
+           type== "word_forms_nouns" |
+           type == "word_forms_verbs" | 
+           type == "word_endings_nouns" |
+           type == "word_endings_verbs"))
+
+nrow(Complex) == (N_total - N_long)*N_complexity_items
+```
+
+As a quick sanity check, let's see which items have ordinal data (to make sure the above code worked correctly). 
+```{r}
+Complex %>%
+  filter(out==2) %>%
+  group_by(definition) %>%
+  count()
+```
+Ok, it's only the combine variable and word endings variables -- that's right. 
+
+## Data Screening
+Let's see how many missing values there are. 
+```{r count NAs}
+Complex %>%
+  filter(is.na(out)) %>%
+  group_by(definition) %>%
+  count() 
+```
+Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word forms, and 1 who doesn't have word endings.
+
+```{r}
+N_na = 1426
+```
+
+```{r}
+Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
+```
+
+
+```{r Summary Tables}
+Complex %>% 
+  filter(!is.na(out)) %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    sd=sd(out),
+    sum=sum(out),
+    category = first(complexity_category)
+  ) %>%
+  arrange(category) %>%
+  kable(caption="Means and SDs for Each Item (Arranged by Item)")
+```
+```{r}
+Complex %>%
+  filter(!is.na(out)) %>%
+  group_by(definition) %>%
+  summarise(
+    mean=mean(out), 
+    category = first(complexity_category),
+    cat2 = str_replace(category, "_", " " ) %>% str_replace("_", "\n" ) 
+  ) %>%
+  ggplot(aes(x=cat2, y= mean)) + geom_boxplot() 
+```
+It seems like the word endings and the combine words variable have higher means than the morphological and syntactic complexity items (though they are ordinal, but when I treated these as binary in an older version the results were similar). The over-regularization items have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
+
+One difficulty I just thought of is that the we would expect the word form and over-regularization to be non-monotonicaly related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
+
+Therefore, I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
+
+## Data Preparation
+Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
+
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax"))) %>%
+  drop_na()
+
+nrow(Complex_short_with_ids) == N_total - N_long - N_na
+
+
+Complex_short_grammatical <- Complex_short_with_ids %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(starts_with(c("morphology", "syntax"))) # need to get rid of participant names for IRT models. 
+
+N_nog <- nrow(filter(Complex_short_with_ids, combine760 == 0))
+
+nrow(Complex_short_grammatical) == N_total - N_long - N_na -N_nog 
+```
+
+
+## Dimensionality Assessment
+Prior to fitting the IRT model, it's worth looking at the correlation structure of the data to get a sense of the possible dimensionality. 
+
+
+### First for grammatical kids only
+Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
+```{r}
+Complex_tetra <- tetrachoric(Complex_short_grammatical)
+
+rho <- Complex_tetra$rho
+
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37") # create labels for corPlot because the defintions are long and take up a ton of space
+```
+Check out the correlations
+```{r}
+corPlot(rho, labels=lab)
+```
+They look really high. Let's examine the dimensionality, using princals, which is basically just a version of PCA that is appropriate for categorical data. 
+```{r}
+pc <- princals(rho)
+
+plot(pc)
+```
+
+```{r}
+fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2188)
+```
+
+```{r}
+vss(rho, cor="tetra", n.obs = 2188)
+```
+
+
+# IRT: Grammatical only
+## 2pl model
+
+```{r  message=FALSE, warning=FALSE}
+m1 <- mirt(Complex_short_grammatical, 1, itemtype="2PL") 
+```
+
+```{r}
+summary(m1)
+```
+
+```{r}
+M2(m1)
+```
+
+```{r}
+itemfit(m1)
+```
+
+```{r}
+misfit <- itemfit(m1) %>% # Get labels of mis-fitting items. 
+  filter(p.S_X2 <= .10) %>%
+  dplyr::select(item) %>%
+  as.vector()
+
+items_good <- dplyr::select(Complex_short_grammatical, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Complex_short_grammatical, all_of(misfit$item)) # Poorly fitting items
+
+mod_fit <- mirt(items_good, 1, "2PL", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
+Theta <- fscores(mod_fit)
+```
+
+```{r}
+IG762<- itemGAM(items_bad$morphology762, Theta)
+IG764<- itemGAM(items_bad$morphology764, Theta)
+IG771<- itemGAM(items_bad$morphology771, Theta)
+IG783<- itemGAM(items_bad$syntax783, Theta)
+IG792<- itemGAM(items_bad$syntax792, Theta)
+```
+
+```{r}
+plot(IG762); plot(IG764); plot(IG771)
+```
+
+```{r}
+plot(IG783); plot(IG792)
+```
+
+```{r}
+coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+  
+ggplot(coefs_2pl,  
+       aes(x = a1, y = d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+
+```{r}
+ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+```
+
+```{r}
+true_raw <- Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta = fscores(m1, method="MAP")
+  ) %>%
+  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+
+raw_score <- Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37])
+    ) %>% 
+   ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
+
+true_score <- Complex_short_grammatical %>%
+  mutate(
+    Theta = fscores(m1, method="MAP")
+    ) %>% 
+   ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
+
+library(patchwork)
+
+true_raw/(true_score + raw_score) 
+```
+There are still some 0s but this is considerably fewer than the dataset with all participants included. 
+
+### Dimensionality
+Exploratory 2 dimensional IRT. 
+```{r, warning=TRUE, message=TRUE}
+m2 <- mirt(Complex_short_grammatical, 2, itemtype="2PL", verbose=FALSE)
+```
+
+
+```{r}
+M2(m2)
+anova(m1, m2)
+summary(m2, "oblimin", suppress=.20)
+```
+
+```{r}
+Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta1 = fscores(m2, method="MAP")[,1], 
+    Theta2 = fscores(m2, method="MAP")[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+Could this be due to morphological vs syntactic complexity items?
+```{r, warning=FALSE, message=FALSE}
+model.1 <- mirt.model('
+                      F1 = 1 - 12
+                      F2 = 13 - 37
+                      COV=F1*F2')
+
+m3 <- mirt(Complex_short_grammatical, model.1, "2PL", verbose=FALSE)
+
+M2(m3)
+
+summary(m3)
+```
+
+```{r}
+M2(m3)
+```
+
+```{r}
+anova(m3, m2)
+anova(m3, m1)
+```
+
+### Measurement Invariance
+
+```{r}
+Complex_with_predictors <- Admin %>%
+  dplyr::select(data_id, age, ethnicity, sex) %>%
+  mutate(
+    female = ifelse(sex=="Female", yes=1, no=0),
+    age_y = ifelse(age < 25, yes=1, no=0)
+  ) %>%
+  right_join(., Complex_short_with_ids, by="data_id") %>%
+  filter(combine760 > 0)
+  
+
+nrow(Complex_with_predictors) ==   N_total - N_long - N_na -N_nog 
+```
+
+
+
+```{r}
+Complex_with_predictors %>%
+  summarise(
+    age_missing = sum(is.na(age)), 
+    ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
+    sex_missing = sum(is.na(sex))
+  )
+
+table(Complex_with_predictors$age)
+table(Complex_with_predictors$ethnicity)
+table(Complex_with_predictors$sex)
+```
+
+```{r}
+Complex_short2 <- data.frame(Complex_short_grammatical) 
+
+dif <- lordif(Complex_short2, 
+              Complex_with_predictors$female,
+              criterion="Chisqr", 
+              alpha = .01)
+```
+```{r}
+plot(dif)
+```
+## EH Model
+```{r}
+m1_EH <- mirt(Complex_short_grammatical, 1, itemtype="2PL", dentype = "EH")
+
+M2(m1_EH)
+```
+
+```{r}
+summary(m1_EH)
+```
+
+```{r}
+itemfit(m1_EH)
+```
+
+```{r}
+misfit <- itemfit(m1_EH) %>% # Get labels of mis-fitting items. 
+  filter(p.S_X2 <= .10) %>%
+  dplyr::select(item) %>%
+  as.vector()
+
+items_good <- dplyr::select(Complex_short_grammatical, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Complex_short_grammatical, all_of(misfit$item)) # Poorly fitting items
+
+mod_fit <- mirt(items_good, 1,  itemtype="2PL", dentype = "EH", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
+Theta <- fscores(mod_fit)
+```
+
+```{r}
+IG771<- itemGAM(items_bad$morphology771, Theta)
+IG781<- itemGAM(items_bad$syntax781, Theta)
+IG783<- itemGAM(items_bad$syntax783, Theta)
+IG788<- itemGAM(items_bad$syntax788, Theta)
+IG792<- itemGAM(items_bad$syntax792, Theta)
+```
+
+```{r}
+plot(IG771); plot(IG781); plot(IG783); plot(IG788); plot(IG792)
+```
+
+
+```{r}
+coefs_EH <- coef(m1_EH, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+  
+ggplot(coefs_EH,  
+       aes(x = a1, y = d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_EH, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+```{r}
+ggplot(coefs_EH, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+ggplot(coefs_EH, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+```
+
+### Dimensionality
+We can't fit a two-dimensional model with EH latent variables, but we can test dimensionality like follows
+
+```{r}
+m1EH_theta <- fscores(m1_EH, method="MAP")[,1]
+complex_short_grammatical2 <- data.frame(Complex_short_grammatical)
+expl.detect(complex_short_grammatical2, m1EH_theta , nclusters=2)
+```
+
+## EHW Model
+
+```{r}
+m1_EHW <- mirt(Complex_short_grammatical, 1, itemtype="2PL", technical=list(NCYCLES=4000), dentype = "EHW")
+
+M2(m1_EHW)
+```
+
+```{r}
+summary(m1_EHW)
+```
+
+```{r}
+itemfit(m1_EHW)
+```
+
+```{r}
+misfit <- itemfit(m1_EHW) %>% # Get labels of mis-fitting items. 
+  filter(p.S_X2 <= .10) %>%
+  dplyr::select(item) %>%
+  as.vector()
+
+items_good <- dplyr::select(Complex_short_grammatical, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Complex_short_grammatical, all_of(misfit$item)) # Poorly fitting items
+
+mod_fit <- mirt(items_good, 1,  itemtype="2PL", dentype = "EHW",  technical=list(NCYCLES=4000), verbose=FALSE) # Calculate factor scores using only the well fitting items. 
+Theta <- fscores(mod_fit)
+```
+
+```{r}
+IG781<- itemGAM(items_bad$syntax781, Theta)
+IG783<- itemGAM(items_bad$syntax783, Theta)
+IG788<- itemGAM(items_bad$syntax788, Theta)
+IG792<- itemGAM(items_bad$syntax792, Theta)
+```
+
+```{r}
+plot(IG781); plot(IG783); plot(IG788); plot(IG792)
+```
+
+
+```{r}
+coefs_EHW <- coef(m1_EHW, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+  
+ggplot(coefs_EHW,  
+       aes(x = a1, y = d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_EHW, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+
+
+```{r}
+ggplot(coefs_EHW, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
+ggplot(coefs_EHW, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+```
+
+### Dimensionality 
+```{r}
+m1EHW_theta <- fscores(m1_EHW, method="MAP")[,1]
+expl.detect(complex_short_grammatical2, m1EHW_theta , nclusters=2)
+```
+
+
+## Comparison of distribution of latent variables
+```{r}
+thetas <- Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m1_EH, method="MAP")[,1],
+    Theta_EHW = fscores(m1_EHW, method="MAP")[,1]
+  ) 
+
+
+ggpairs(thetas[,38:41])
+```
+
+```{r}
+Complex_short_grammatical %>%
+  mutate(
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m1_EH, method="MAP")[,1],
+    Theta_EHW = fscores(m1_EHW, method="MAP")[,1]
+  ) %>%
+  dplyr::select("Theta_logit", "Theta_EH","Theta_EHW") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_histogram(alpha = 0.5)
+```
+
+
+```{r}
+hist_plot <- Complex_short_grammatical %>%
+  mutate(
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m1_EH, method="MAP")[,1],
+    Theta_EHW = fscores(m1_EHW, method="MAP")[,1]
+  ) %>%
+  dplyr::select("Theta_logit", "Theta_EH", "Theta_EHW") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_density(alpha = .2) +
+  ggtitle("Distribution of Theta")
+```
+
+
+
+```{r}
+Theta <- matrix(seq(-4,4,.01))
+m1_inf <- testinfo(m1, Theta)
+m1_EH_inf <- testinfo(m1_EH, Theta)
+m1_EHW_inf <- testinfo(m1_EHW, Theta)
+
+
+info_plot <- tibble(Theta, m1_inf, m1_EH_inf, m1_EHW_inf) %>%
+  pivot_longer(c("m1_inf", "m1_EH_inf", "m1_EHW_inf"), names_to = "LV", values_to = "Info") %>%
+  mutate(
+    model = ifelse(LV == "m1_inf", yes="Gauss", no = ifelse(
+      LV=="m1_EH_inf", yes= "EH", no="EHW"
+    ))
+  ) %>%
+  ggplot(aes(x=Theta, y=Info, group=model, color=model)) + geom_line() +
+  ggtitle("Test Information")
+
+```
+
+
+```{r}
+hist_plot + info_plot  + plot_layout(guides = "collect")
+```
+### Procrustes Transformation
+```{r}
+coef_2pl_short <- dplyr::select(coefs_2pl, "a1", "d")
+coef_EH_short <- dplyr::select(coefs_EH, "a1", "d")
+coef_EHW_short <- dplyr::select(coefs_EHW, "a1", "d")
+```
+
+```{r}
+proc_2plEH <- procrustes(coef_2pl_short, coef_EH_short, scale=TRUE)
+summary(proc_2plEH)
+plot(proc_2plEH)
+```
+
+
+
+```{r}
+proc_2PLEHW <- procrustes(coef_2pl_short, coef_EHW_short, scale=TRUE)
+summary(proc_2PLEHW)
+plot(proc_2PLEHW)
+```
+
+`

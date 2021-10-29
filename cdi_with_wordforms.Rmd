@@ -81,7 +81,7 @@ Complex %>%
 Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word forms, and 1 who doesn't have word endings. 
 
 
-```{r Drop NAs}
+```{r}
 Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
 ```
 
@@ -146,7 +146,7 @@ Complex_poly <- polychoric(Complex_short)
 
 rho <- Complex_poly$rho
 
-lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42") # create labels for corPlot because the defintions are long and take up a ton of space
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38") # create labels for corPlot because the defintions are long and take up a ton of space
 ```
 Check out the correlations
 ```{r}
@@ -188,9 +188,7 @@ m1 <- mirt(Complex_short, 1, itemtype="graded", verbose=FALSE) # graded because 
 m1
 ```
 
-```{r}
-summary(m1)
-```
+
 
 
 Let's check the overall fit of the model. The chi square statistic here isn't super meaningful given the sample size.  
@@ -223,39 +221,22 @@ Theta <- fscores(mod_fit)
 # Plot non-linear item response theory curves with the factor scores 
 
 ```{r}
-IG760 <- itemGAM(items_bad$combine760, Theta)
+IG762<- itemGAM(items_bad$morphology762, Theta)
+IG764<- itemGAM(items_bad$morphology764, Theta)
+IG771<- itemGAM(items_bad$morphology771, Theta)
+IG783<- itemGAM(items_bad$syntax783, Theta)
+IG792<- itemGAM(items_bad$syntax792, Theta)
 
-IG762 <- itemGAM(items_bad$morphology762,Theta)
-IG769<- itemGAM(items_bad$morphology769,Theta)
-IG771<- itemGAM(items_bad$morphology771,Theta)
-
-
-IG775 <- itemGAM(items_bad$syntax775,Theta)
-IG776 <- itemGAM(items_bad$syntax776,Theta)
-IG785 <- itemGAM(items_bad$syntax785,Theta)
-IG787<- itemGAM(items_bad$syntax787,Theta)
-
-IG688 <- itemGAM(items_bad$word_endings688,Theta)
-IG689<- itemGAM(items_bad$word_endings689,Theta)
-```
-
-Combine
-```{r}
-plot(IG760)
-```
-Flattens out pretty quickly at a difficulty of 0. 
-
-```{r}
-plot(IG762); plot(IG769); plot(IG771)
-```
-Syntax items
-```{r}
-plot(IG775); plot(IG776); plot(IG785); plot(IG787)
 ```
 
 ```{r}
-plot(IG688); plot(IG689)
+
+
+
 ```
+
+
+
 
 
 Next let's look at the relationship between the true scores and the raw scores. 

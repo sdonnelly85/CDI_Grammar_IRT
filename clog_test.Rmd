@@ -1,0 +1,476 @@
+---
+title: "Comparing Link Functions"
+date created: September 13, 2021
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+This is a scratch pad. I'm playing around with MIRT to try to identify alternative models to the 2PL. Jay pointed out that the correlation between discrimination and difficulty parameters in the 2PL model may be evidence of a misfitting model. The form of the link function will strongly affect estimation of the extreme values of the latent variable. Here, I try some alternative models. 
+
+I've excluded all the preliminary data processing steps from this file, and will move on to the models. 
+
+```{r, include=FALSE}
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(ltm) # more IRT functions
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(GGally) # More plottinng options. 
+library(lordif) # differential item functioning.
+library(sirt)
+```
+
+
+```{r, include=FALSE}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS")
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+```{r, include=FALSE}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>%
+  filter(type == "combine" | 
+           type == "complexity" |
+           type == "word_endings" |
+           type== "word_forms_nouns" |
+           type == "word_forms_verbs" | 
+           type == "word_endings_nouns" |
+           type == "word_endings_verbs"
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+```
+
+
+```{r, include=FALSE}
+Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
+```
+
+
+```{r, include=FALSE}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
+
+
+Complex_short <- Complex_short_with_ids %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax")), c("word_endings686", "word_endings687", "word_endings688", "word_endings689")) # dataset for IRT can't have IDs
+```
+
+```{r, include=FALSE}
+Complex_short_grammatical <- Complex_short %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(starts_with(c("morphology", "syntax")))
+
+Complex_short_all <- Complex_short %>%
+  dplyr::select(starts_with(c("morphology", "syntax")))
+```
+
+# 2pl Model
+
+The model I have been fitting to the syntactic complexity data is the 2PL model. 
+```{r}
+m1 <- mirt(Complex_short_grammatical, 1, itemtype="2PL", verbose=FALSE) 
+```
+
+However, the pattern of discrimination and difficulty parameters here is a little worrisome. 
+```{r}
+coefs_2pl <- coef(m1, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+
+ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+Two things stand out: First, the discrimination parameters are extremely large. According to [DeAyala 2009](https://www.amazon.com/Theory-Practice-Response-Methodology-Sciences/dp/1593858698/ref=sr_1_1?dchild=1&keywords=the+theory+and+practice+of+item+response+theory&qid=1631782745&sr=8-1), good discrimination parameters are between .8 and 2.5. The parameters we have here, are much larger, suggesting they will only discriminate between people at a relatively narrow range of values on the scale of syntactic proficiency.
+This can be seen in the item response functions below (selected for 4 random items): 
+```{r, fig.show="hold", out.width="50%"}
+itemplot(m1, 1)
+itemplot(m1, 10)
+itemplot(m1, 17)
+itemplot(m1, 30)
+```
+Second, there is a correlation between the difficulty and discrimination parameters, which could indicate an estimation issue. 
+
+The way I see it, there could be two problems leading to those patterns above: First, the IRF could be incorrect, and second, the form of the latent variable could be incorrect. Below I compare the fit of this model to alternative models. 
+
+# Changing the IRF
+## cloglog
+One alternative link function is the cloglog link function, written below
+ $F\left(\eta_{i}\right)=1-e^{-e^{\eta_{i}}}$ where $\eta_{i}$ is the linear predictor. 
+
+Let's make a function to plot it and compare it to the logistic distribution 
+```{r}
+cloglog <- function(a, b, th){ # I broke it into three parts, linear prediction, inner exp and outer exp
+  lin = a*(th-b) # linear predictor
+  inner = -exp(lin) # exp inside
+  outer = -exp(inner) # exp outside
+  pi = 1+outer # combine together
+  return(pi)
+}
+```
+
+```{r}
+cloglog(5, 2, 2)
+```
+
+And now the logistic link function
+```{r}
+logit<- function(a, b, th){# I also broke it into three parts, linear prediction, inner exp and outer exp
+  lin = a*(th - b) # linear predictor
+  top = exp(lin) # numerator
+  bottom = 1 + top # denominator
+  pi = top/bottom # combine together
+  return(pi)
+}
+```
+
+```{r}
+logit(5, 2, 2)
+```
+
+Let's plot the two against each other
+```{r}
+tibble(
+  theta = rnorm(1000, 0, 1)
+) %>%
+  mutate(
+    pi_clog = cloglog(1, .5, theta),
+    pi_logit = logit(1, .5, theta)
+  ) %>%
+  pivot_longer(col=starts_with("pi"), names_to="link", names_prefix="pi_", values_to="pi") %>%
+  ggplot(aes(x = theta, y=pi, colour=link)) + geom_point()
+  
+
+```
+
+So the two make similar predictions about th lowest levels of theta, but not the higher values of theta. The logit link function is symmetrical but the cloglog is not. 
+
+
+We can use the cloglog link function in MIRT using the createItem function. I've had a lot of trouble with this, however. The model converges in 1-3 iterations, sometimes returning the starting values and other times returning an estimated model that fits poorly. I wonder if I've used this function incorrectly. I asked a question about it on the [MIRT Google Groups](https://groups.google.com/g/mirt-package/c/B4P0MWEV-Zc). I found that with the starting values below, the model converges after a couple iterations, so I'm using it to compare theta estimate and IRFs to those from the other models, but I'm not confident about this approach.
+
+Update: after an email conversation with the package developer, I've updated the code and think this should run. 
+```{r}
+name <- 'cloglog'
+par <- c(a = .5, b = 2)
+est <- c(TRUE, TRUE)
+P.cloglog <- function(par, Theta, ncat){
+  a <- par[1]
+  b <- par[2]
+  P1 <- 1 - exp(-exp(a*(Theta - b)))
+  cbind(1 - P1, P1)
+}
+
+clog <- createItem(name, par=par, est=est, P=P.cloglog, derivType = 'symbolic')
+```
+
+```{r}
+m2 <- mirt(Complex_short_grammatical, 1, "cloglog", customItems=list(cloglog=clog), optimizer='Nelder-Mead')
+```
+
+```{r}
+coefs_2pl <- coef(m2, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(75:76)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a, b) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+
+ggplot(coefs_2pl,  
+       aes(x = a, y = b)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+There's also still a bit of correlation between the two items. Also, many, many of the IRFs significantly misfit the data, which was not the case with teh 2PL model. 
+
+```{r}
+itemfit(m2)
+```
+
+## Semi-Parametric 
+Since the cloglog fits poorly, I'm going to try a couple semi-parametric models. These can serve as a useful baseline to compare the 2PL and clog model to since they will fit the data quite well at the cost of interpretability of their parameters. 
+
+These spline models start with 4 knots. I've increase the NCYCLES to 4000 and it still doesn't quite reach the convergence criteria, but the deviation is quite small
+```{r}
+m3 <- mirt(Complex_short_grammatical, 1, "spline", technical=list(NCYCLES=4000), verbose=FALSE) 
+```
+
+
+
+I've tried a monopoly model with mode knots that the one above. This takes a long time to run so I've saved the model and re-opened it. 
+```{r}
+#m4 <- mirt(Complex_short_grammatical, 1, "monopoly", monopoly.k=3)
+#saveRDS(m4, "test_models/m4.rds")
+m4 <- readRDS("test_models/m4.rds")
+```
+
+
+
+Now we can compare these models to the 2PL and CLOG Model. I'll start by looking at the correlation between factor scores. 
+I'll start by comparing theta across the three models.
+```{r}
+thetas <- Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta_logit = fscores(m1, method="EAP")[,1], 
+    Theta_clog = fscores(m2, method="EAP")[,1],
+    Theta_spline = fscores(m3, method="EAP")[,1], 
+    Theta_mono = fscores(m4, method="EAP")[,1], 
+    ) 
+
+
+ggpairs(thetas[,38:42])
+```
+The factor scores from the 2PL model correlate at .997 with those from both of the semi parametric models, suggesting the extra flexibility in the IRFs from these models aren't adding very much. Also note the realy high correlation between cloglog and the raw data, suggesting it's probably not estimating the latent variable. 
+
+Next we can look at the IRFs for each of these models, to see if the steepness of the IRFs for the 2PL is due to a misfitting link function. 
+
+
+```{r,fig.show="hold", out.width="50%"}
+mods <- list(twoPL = m1, clog = m2, spline = m3, mono=m4)
+itemplot(mods,1)
+itemplot(mods,6)
+itemplot(mods,11)
+itemplot(mods,16)
+itemplot(mods,21)
+itemplot(mods,26)
+itemplot(mods,31)
+itemplot(mods,36)
+```
+
+For al of these items, the two semi-parametric models produce IRFs that are very similar to that of the 2PL model, except for some semi-parametric silliness (spikes at the extreme values, etc)
+
+
+# Changing the LV
+
+Another possibility is that the gaussian latent variable is inappropriate. We can assume a non-normal distribution using the three methods from MIRT. 
+
+First the empirical histogram. 
+```{r}
+m5 <- mirt(Complex_short_grammatical, 1, "2PL", dentype="EH")
+```
+
+```{r}
+coefs_2pl <- coef(m5, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+
+ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+Discrimination parameters looks much more reasonable, though they are still correlated with the difficulty parameter. 
+
+
+Let's try the weighted empirical histogram. I've set zeroExtreme to TRUE, because there are so many participants with 0s. 
+```{r}
+m6 <- mirt(Complex_short_grammatical, 1, dentype="EHW", technical=list(NCYCLES=6000))
+```
+```{r}
+coefs_2pl <- coef(m6, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+
+ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+
+Try with semi-parametric davidian curves. 
+```{r}
+m7<- mirt(Complex_short_grammatical, 1, "2PL", dentype="Davidian-4", verbose=FALSE)
+```
+
+```{r}
+coefs_2pl <- coef(m7, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(149:150)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) %>%
+  dplyr::select(item, a1, d) %>%
+  mutate(
+   category =  gsub('[[:digit:]]+', '', item)
+  )
+
+ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+This makes the discrimination parameters even larger. 
+
+# Comparing the four models
+I'll start by comparing theta across the three models.
+```{r}
+thetas <- Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m5, method="MAP")[,1],
+    Theta_EHW = fscores(m6, method="MAP")[,1], 
+    Theta_Dav = fscores(m7, method="MAP")[,1]
+  ) 
+
+
+ggpairs(thetas[,38:42])
+```
+
+Correlation between factor scores in 2PL and other models is at least .992. 
+
+Let's look at the IRFs
+```{r,fig.show="hold", out.width="50%"}
+mods <- list(twoPL = m1, EH = m5, EHW = m6, Dav=m7)
+itemplot(mods,1)
+itemplot(mods,6)
+itemplot(mods,11)
+itemplot(mods,16)
+itemplot(mods,21)
+itemplot(mods,26)
+itemplot(mods,31)
+itemplot(mods,36)
+```
+The EH rises a bit more slowly than the 2PL. EHW is in the middle, Dav is generally a bit steeper. The IRFs for these models are more different than the correlation between the distributions of latent variables would suggest. 
+
+Let's plot the distributions of the latent variables against one another in histograms. 
+```{r}
+Complex_short_grammatical %>%
+  mutate(
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m5, method="MAP")[,1],
+    Theta_EHW = fscores(m6, method="MAP")[,1], 
+    Theta_Dav = fscores(m7, method="MAP")[,1]
+  ) %>%
+  dplyr::select("Theta_logit", "Theta_EH","Theta_EHW", "Theta_Dav") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_histogram(alpha = 0.5)
+
+
+```
+
+Looks like the EHW and EH differ substantially from the logistic model in how compressed the tails are. The lowest and highest values in the EH model are lower and higher than their counterparts in the logit model. The lowest and highest values of the EHW are less extreme than the lowest and of the logit model. 
+
+
+Let's compare the distribution of latent variables from the EH, EHW and logistic models. 
+```{r}
+hist_plot <- Complex_short_grammatical %>%
+  mutate(
+    Theta_logit = fscores(m1, method="MAP")[,1], # Used MAP here, but EAP gives same results. 
+    Theta_EH = fscores(m5, method="MAP")[,1],
+  ) %>%
+  dplyr::select("Theta_logit", "Theta_EH") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_density(alpha = .2) +
+  ggtitle("Distribution of Theta")
+```
+
+
+
+```{r}
+Theta <- matrix(seq(-4,4,.01))
+m1_inf <- testinfo(m1, Theta)
+m5_inf <- testinfo(m5, Theta)
+
+
+info_plot <- tibble(Theta, m1_inf, m5_inf) %>%
+  pivot_longer(c("m1_inf", "m5_inf"), names_to = "LV", values_to = "Info") %>%
+  mutate(
+    model = ifelse(LV == "m1_inf", yes="Gauss", no = "EH")
+  ) %>%
+  ggplot(aes(x=Theta, y=Info, group=model, color=model)) + geom_line() +
+  ggtitle("Test Information")
+
+```
+
+```{r}
+hist_plot + info_plot + plot_layout(guides = "collect")
+```
+`
+
+
+
+```{r}
+m5_theta <- fscores(m5, method="MAP")[,1]
+complex_short_grammatical2 <- data.frame(Complex_short_grammatical)
+expl.detect(complex_short_grammatical2, m5_theta, nclusters=2)
+```
+```{r}
+m1_theta <- fscores(m1, method="MAP")[,1]
+complex_short_grammatical2 <- data.frame(Complex_short_grammatical)
+expl.detect(complex_short_grammatical2, m1_theta, nclusters=2)
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+```

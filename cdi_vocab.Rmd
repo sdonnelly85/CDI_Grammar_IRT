@@ -11,8 +11,11 @@ output:
     number_sections: true
 ---
 
-Note to self: these models take a long time to run, so, rather than estimating them each time I run the code, I've saved the models, commented out teh code for running the models, and included the code for opening the models. Be **EXTRA CAREFUL** that the saved models are the most up to date.  
-```{r}
+Note to self: these models take a long time to run, so, rather than estimating them each time I run the code, I've saved the models, commented out teh code for running the models, and included the code for opening the models. Be **EXTRA CAREFUL** that the saved models are the most up to date. 
+
+
+# Preliminaries
+```{r  message=FALSE, warning=FALSE}
 library(wordbankr) # WB data
 library(tidyverse) # tidy
 library(mirt) # IRT models
@@ -29,31 +32,69 @@ library(lordif) # differential item functioning.
 ```{r}
 Inst <- get_instrument_data(language="English (American)", form="WS")
 Admin <- get_administration_data(language="English (American)", form="WS")
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
 Item <- get_item_data(language="English (American)", form = "WS")
 ```
 
 
 ```{r format data}
-Complex <- Admin %>%
+Vocab <- Admin %>%
   full_join(.,Inst, by="data_id") %>%
   full_join(., Item, by="num_item_id") %>%
-  filter(longitudinal==FALSE) %>%
+  filter(longitudinal==FALSE) %>% # remove longitudinal data set
   filter(type == "word"
          ) %>%
   mutate(
     out = ifelse(value=="produces", yes=1, no =0)
     )
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+nrow(Vocab) == (N_total - N_long)*N_vocab
 ```
 
 ```{r count NAs}
-Complex %>%
+Vocab %>%
   filter(is.na(out)) %>%
   group_by(definition) %>%
   count()
 ```
+Number of missing items differs by word. How can this be??
+
+Check distribution of missing values by source. 
+```{r}
+Vocab %>%
+  filter(is.na(out)) %>%
+  group_by(source_name) %>%
+  count()
+```
+
+These all seem to come from a single study (- 1). 
+```{r}
+Vocab %>%
+  group_by(source_name) %>%
+  count()
+```
+```{r}
+Vocab %>%
+ filter(is.na(out)) %>%
+ filter(source_name=="Marchman (Outreach1)")
+```
+No idea why this word is missing. I'm removing all these participants from the IRT models. 
+
+```{r}
+N_missing <- Vocab %>%
+  filter(is.na(out)) %>%
+  group_by(data_id) %>%
+  slice(1) %>%
+  ungroup(data_id) %>%
+  count()
+```
+
 
 ```{r Summary Tables}
-Complex %>% 
+Vocab %>% 
   filter(!is.na(out)) %>%
   group_by(definition) %>%
   summarise(
@@ -67,7 +108,7 @@ Complex %>%
 
 
 ```{r}
-Complex %>% 
+Vocab %>% 
   filter(!is.na(out)) %>%
   group_by(definition) %>%
   summarise(
@@ -78,22 +119,26 @@ Complex %>%
   ggplot(aes(x=mean, fill=category)) + geom_histogram()
 ```
 
+Stick to just nouns and predicates as these are relatively clearly not grammatical items.
 ```{r}
-Complex_short_with_ids <- Complex %>% 
+Vocab_short_with_ids <- Vocab %>% 
   filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
   dplyr::select(data_id, value, out, definition) %>%
   pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") %>%
-  drop_na()
+  drop_na() # drop participants with missing data
 
 
-Complex_short <- Complex_short_with_ids %>%
+Vocab_short <- Vocab_short_with_ids %>%
   dplyr::select(-"data_id") # dataset for IRT can't have IDs
+
+nrow(Vocab_short_with_ids) == N_total - N_long - N_missing # Looks good
 ```
 
 
+# Dimensionality assessment
 I'm not going to bother with the correlation plot because I think it will be too difficult to visualize. 
 ```{r}
-Complex_poly <- tetrachoric(Complex_short)
+Complex_poly <- tetrachoric(Vocab_short)
 
 rho <- Complex_poly$rho
 ```
@@ -105,21 +150,18 @@ plot(pc)
 ```
 
 ```{r}
-fa.parallel(rho, fa="fa", cor="poly", n.obs = 4186)
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 4186)
 ```
 
-```{r}
-#m1 <- mirt(Complex_short, 1, itemtype="2PL") 
-m1 <- readRDS("vocab_output/m1.rds")
-```
 
+# One dimension
+## 2PL Model
 ```{r}
-m1
-```
-```{r}
+#m1 <- mirt(Vocab_short, 1, itemtype="2PL") 
 #saveRDS(m1, "vocab_output/m1.rds")
+m1 <-  readRDS("vocab_output/m1.rds")
 ```
-
+Looking at item misfit statistics
 ```{r}
 #itf <- itemfit(m1)
 #saveRDS(itf, "vocab_output/itf.rds")
@@ -133,14 +175,14 @@ misfit <- itf  %>% # Get labels of mis-fitting items.
   dplyr::select(item) %>%
   as.vector()
 
-items_good <- dplyr::select(Complex_short, -all_of(misfit$item)) # Well fitting items
-items_bad <- dplyr::select(Complex_short, all_of(misfit$item)) # Poorly fitting items
+items_good <- dplyr::select(Vocab_short, -all_of(misfit$item)) # Well fitting items
+items_bad <- dplyr::select(Vocab_short, all_of(misfit$item)) # Poorly fitting items
 
 mod_fit <- mirt(items_good, 1, "2PL", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
 Theta <- fscores(mod_fit)
 ```
 
-```{r}
+```{r, fig.show="hold", out.width="50%"}
 plot(itemGAM(items_bad$dog, Theta)) %>% update(main = "dog")
 plot(itemGAM(items_bad$donkey,Theta)) %>% update(main = "donkey")
 plot(itemGAM(items_bad$teddybear,Theta)) %>% update(main = "teddybear")
@@ -162,7 +204,7 @@ plot(itemGAM(items_bad$TV,Theta)) %>% update(main = "TV")
 ```
 
 
-```{r}
+```{r, fig.show="hold", out.width="50%"}
 plot(itemGAM(items_bad$catch, Theta)) %>% update(main = "catch")
 plot(itemGAM(items_bad$fit,Theta))  %>% update(main = "fit")
 plot(itemGAM(items_bad$get,Theta)) %>% update(main = "get")
@@ -171,20 +213,20 @@ plot(itemGAM(items_bad$read,Theta)) %>% update(main = "read")
 ```
 
 ```{r}
-true_raw <- Complex_short %>%
+true_raw <- Vocab_short %>%
   mutate(
     Raw = rowSums(.[,1:478]), 
     Theta = fscores(m1)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
-raw_score <- Complex_short %>%
+raw_score <- Vocab_short %>%
   mutate(
     Raw = rowSums(.[,1:478])
     ) %>% 
    ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
 
-true_score <- Complex_short %>%
+true_score <- Vocab_short %>%
   mutate(
     Theta = fscores(m1)
     ) %>% 
@@ -208,6 +250,74 @@ coefs_2pl <- coef(m1, as.data.frame = TRUE) %>%
   pivot_wider(id_cols=item, names_from=parameter, values_from=value) 
 
 ggplot(coefs_2pl,  
+       aes(x = a1, y = -d)) + # Note in the book they use -d here, I think MIRT outputs a1 and an easiness rather than a difficulty. 
+  geom_point(alpha = .3) + 
+  ggrepel::geom_text_repel(data = coefs_2pl, 
+                  aes(label = item), size = 3) + 
+  xlab("Discrimination") + 
+  ylab("Difficulty") + theme_minimal()
+```
+
+
+
+```{r}
+ggplot(coefs_2pl, aes(x=a1, fill=lexical_category)) + geom_histogram() + theme_minimal()
+ggplot(coefs_2pl, aes(x=d, fill=lexical_category)) + geom_histogram() + theme_minimal()
+```
+
+## Try changing to a non-parametric link function
+These discrimination parameters look good, but I'm not crazy about the item response functions, so I will try a spline model .
+```{r}
+#m2 <- mirt(Vocab_short, 1, "spline", technical=list(NCYCLES = 1000)) # I can increase iterations, but it just jumps around the same few values. 
+#saveRDS(m2, "vocab_output/m2.rds")
+m2 <-  readRDS("vocab_output/m2.rds")
+```
+
+
+Plot latent variables of spline model against 2PL model. 
+```{r}
+Vocab_short %>%
+  mutate(
+    Raw = rowSums(.[,1:478]), 
+    Theta_2pl = fscores(m1)[,1], 
+    Theta_spline = fscores(m2)[,1]
+  ) %>%
+  dplyr::select("Raw", "Theta_2pl", "Theta_spline") %>%
+  ggpairs()
+```
+
+
+## Try other latent variable
+```{r}
+#m3 <- mirt(Vocab_short, 1, dentype="EH",  technical=list(NCYCLES = 2000)) 
+saveRDS(m3, "vocab_output/m3.rds")
+m3 <- readRDS("vocab_output/m3.rds")
+```
+
+```{r}
+Vocab_short %>%
+  mutate(
+    Raw = rowSums(.[,1:478]), 
+    Theta_2pl = fscores(m1)[,1], 
+    Theta_spline = fscores(m2)[,1], 
+    Theta_EH =  fscores(m3)[,1]
+  ) %>%
+  dplyr::select("Raw", "Theta_2pl", "Theta_spline", "Theta_EH") %>%
+  ggpairs()
+```
+
+
+```{r}
+coefs_2pl <- coef(m3, as.data.frame = TRUE) %>% 
+ t() %>%
+  as_tibble() %>%
+  dplyr::select(-c(1913:1914)) %>%
+  pivot_longer(everything()) %>%
+  tidyr::separate(, col=name, into=c("item", "parameter"), sep="([.])") %>%
+  filter(parameter == "a1" | parameter == "d" ) %>%
+  pivot_wider(id_cols=item, names_from=parameter, values_from=value) 
+
+ggplot(coefs_2pl,  
        aes(x = a1, y = -d)) + # Note in the book they use -d here, I think MIRT outputs a1 and -d
   geom_point(alpha = .3) + 
   ggrepel::geom_text_repel(data = coefs_2pl, 
@@ -216,110 +326,55 @@ ggplot(coefs_2pl,
   ylab("Difficulty") + theme_minimal()
 ```
 
-This is fairly different from the distrbution in the Frank Book. In particular, the difficulty parameters are 
 
-
-
-```{r}
-#ggplot(coefs_2pl, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
-#ggplot(coefs_2pl, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
-```
-
-
-
-```{r}
-#m2 <- mirt(Complex_short, 1, itemtype="2PL", dentype="EHW") 
-#saveRDS(m2, "vocab_output/m2.rds")
-m2 <- readRDS("vocab_output/m2.rds")
-```
-
-
-```{r}
-true_raw <- Complex_short %>%
-  mutate(
-    Raw = rowSums(.[,1:478]), 
-    Theta = fscores(m2)
-  ) %>%
-  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
-
-raw_score <- Complex_short %>%
-  mutate(
-    Raw = rowSums(.[,1:478])
-    ) %>% 
-   ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
-
-true_score <- Complex_short %>%
-  mutate(
-    Theta = fscores(m2)
-    ) %>% 
-   ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
-
-library(patchwork)
-
-true_raw/(true_score + raw_score) 
-```
-
-
-```{r}
-m2b <- mirt(Complex_short, 1, itemtype="2PL", dentype="EH") 
-saveRDS(m2b, "vocab_output/m2b.rds")
-#  m2b <- readRDS("vocab_output/m2b.rds")
-```
-
-```{r}
-true_raw <- Complex_short %>%
-  mutate(
-    Raw = rowSums(.[,1:478]), 
-    Theta = fscores(m2b)
-  ) %>%
-  ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
-
-raw_score <- Complex_short %>%
-  mutate(
-    Raw = rowSums(.[,1:478])
-    ) %>% 
-   ggplot(aes(x=Raw)) + geom_histogram() + theme_minimal()
-
-true_score <- Complex_short %>%
-  mutate(
-    Theta = fscores(m2b)
-    ) %>% 
-   ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
-
-library(patchwork)
-
-true_raw/(true_score + raw_score) 
-```
-
-```{r}
-anova(m2b, m1)
-```
-
-
+# Add a dimension
 Compare this to a model with 2 dimensions. 
 ```{r}
-#m3 <- mirt(Complex_short, 2, itemtype="2PL", maxit=2000) 
+#m4<- mirt(Vocab_short, 2, itemtype="2PL", technical=list(NCYCLES = 4000)) 
+saveRDS(m4, "vocab_output/m4.rds")
+m4 <-  readRDS("vocab_output/m4.rds")
 ```
 
 ```{r}
-#anova(m3, m1)
+summary(m4, "oblimin", suppress=.20)
 ```
 
 ```{r}
-#model.1 <- mirt.model('
-#                      F1 = 1 - 312
-#                      F2 = 313 - 478
-#                      COV=F1*F2')
+anova(m4, m1)
+```
 
-#m4 <- mirt(Complex_short, model.1, "2PL", verbose=FALSE)
+```{r}
+Vocab_short %>%
+  mutate(
+    Raw = rowSums(.[,1:478]), 
+    Theta1 = fscores(m4, method="MAP")[,1], 
+    Theta2 = fscores(m4, method="MAP")[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+Second factor doesn't look like it's doing much work. 
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 312
+                      F2 = 313 - 478
+                      COV=F1*F2')
+
+#m5 <- mirt(Vocab_short, model.1, "2PL")
 
 
-#summary(m4)
+summary(m5)
+
+saveRDS(m5, "vocab_output/m5.rds")
+m5 <-  readRDS("vocab_output/m5.rds")
 ```
 
 
 ```{r}
-#anova(m4, m3)
+anova(m5, m1)
 ```
 
 ```{r}
@@ -357,8 +412,9 @@ Complex_short2 <- data.frame(Complex_short)
 #              criterion="Chisqr", 
 #              alpha = .01)
 
-saveRDS(dif, "vocab_output/dif.rds")
+#saveRDS(dif, "vocab_output/dif.rds")
 dif  <- readRDS("vocab_output/dif.rds")
+
 ```
 ```{r}
 dif
