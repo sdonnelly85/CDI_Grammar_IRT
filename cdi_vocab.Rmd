@@ -144,9 +144,9 @@ rho <- Complex_poly$rho
 ```
 These will not run. 
 ```{r}
-pc <- princals(rho)
+#pc <- princals(rho)
 
-plot(pc)
+#plot(pc)
 ```
 
 ```{r}
@@ -261,8 +261,8 @@ ggplot(coefs_2pl,
 
 
 ```{r}
-ggplot(coefs_2pl, aes(x=a1, fill=lexical_category)) + geom_histogram() + theme_minimal()
-ggplot(coefs_2pl, aes(x=d, fill=lexical_category)) + geom_histogram() + theme_minimal()
+#ggplot(coefs_2pl, aes(x=a1, fill=lexical_category)) + geom_histogram() + theme_minimal()
+#ggplot(coefs_2pl, aes(x=d, fill=lexical_category)) + geom_histogram() + theme_minimal()
 ```
 
 ## Try changing to a non-parametric link function
@@ -290,7 +290,7 @@ Vocab_short %>%
 ## Try other latent variable
 ```{r}
 #m3 <- mirt(Vocab_short, 1, dentype="EH",  technical=list(NCYCLES = 2000)) 
-saveRDS(m3, "vocab_output/m3.rds")
+#saveRDS(m3, "vocab_output/m3.rds")
 m3 <- readRDS("vocab_output/m3.rds")
 ```
 
@@ -299,11 +299,42 @@ Vocab_short %>%
   mutate(
     Raw = rowSums(.[,1:478]), 
     Theta_2pl = fscores(m1)[,1], 
-    Theta_spline = fscores(m2)[,1], 
-    Theta_EH =  fscores(m3)[,1]
+    Theta_spline = fscores(m2, use_dentype_estimate=TRUE)[,1], 
+    Theta_EH =  fscores(m3, use_dentype_estimate=TRUE)[,1]
   ) %>%
   dplyr::select("Raw", "Theta_2pl", "Theta_spline", "Theta_EH") %>%
   ggpairs()
+```
+
+Compare the shape of distribution of latent variables. 
+```{r}
+(dens_plot <- Vocab_short %>%
+  mutate(
+    Theta_logit = fscores(m1)[,1], # Used MAP here, but EAP gives same results. 
+    Theta_spline = fscores(m2, use_dentype_estimate=TRUE)[,1],
+    Theta_EH = fscores(m3, use_dentype_estimate=TRUE)[,1]
+  ) %>%
+  dplyr::select("Theta_logit", "Theta_spline", "Theta_EH") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_density(alpha = .2) +
+  ggtitle("Distribution of Theta"))
+```
+
+```{r}
+Theta <- matrix(seq(-4,4,.01))
+m1_inf <- testinfo(m1, Theta)
+#mspline_inf <- testinfo(m2, Theta)
+mEH_inf <- testinfo(m3, Theta)
+
+
+(info_plot <- tibble(Theta, m1_inf, mEH_inf) %>%
+   pivot_longer(c("m1_inf", "mEH_inf"), names_to = "LV", values_to = "Info") %>%
+  mutate(
+    model = ifelse(LV == "m1_inf", yes="2PL", no ="EH")
+  ) %>%
+  ggplot(aes(x=Theta, y=Info, group=model, color=model)) + geom_line() +
+  ggtitle("Test Information"))
+
 ```
 
 
@@ -331,7 +362,7 @@ ggplot(coefs_2pl,
 Compare this to a model with 2 dimensions. 
 ```{r}
 #m4<- mirt(Vocab_short, 2, itemtype="2PL", technical=list(NCYCLES = 4000)) 
-saveRDS(m4, "vocab_output/m4.rds")
+#saveRDS(m4, "vocab_output/m4.rds")
 m4 <-  readRDS("vocab_output/m4.rds")
 ```
 
@@ -347,8 +378,8 @@ anova(m4, m1)
 Vocab_short %>%
   mutate(
     Raw = rowSums(.[,1:478]), 
-    Theta1 = fscores(m4, method="MAP")[,1], 
-    Theta2 = fscores(m4, method="MAP")[,2]
+    Theta1 = fscores(m4)[,1], 
+    Theta2 = fscores(m4)[,2]
   ) %>%
   dplyr::select(Raw, Theta1, Theta2) %>%
   ggpairs()
@@ -366,9 +397,9 @@ model.1 <- mirt.model('
 #m5 <- mirt(Vocab_short, model.1, "2PL")
 
 
-summary(m5)
+#summary(m5)
 
-saveRDS(m5, "vocab_output/m5.rds")
+#saveRDS(m5, "vocab_output/m5.rds")
 m5 <-  readRDS("vocab_output/m5.rds")
 ```
 
@@ -378,19 +409,32 @@ anova(m5, m1)
 ```
 
 ```{r}
-Complex_with_predictors <- Admin %>%
+Vocab_short %>%
+  mutate(
+    Raw = rowSums(.[,1:478]), 
+    Theta1 = fscores(m5)[,1], 
+    Theta2 = fscores(m5)[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+
+```{r}
+Vocab_with_predictors <- Admin %>%
   dplyr::select(data_id, age, ethnicity, sex, mom_ed) %>%
   mutate(
     female = ifelse(sex=="Female", yes=1, no=0),
    age_y = ifelse(age < 25, yes=1, no=0),
    college_grad = ifelse(mom_ed %in% c("College", "Some Graduate",  "Some Graduate"), yes=1, no=0)
    ) %>%
-  right_join(., Complex_short_with_ids, by="data_id")
+  right_join(., Vocab_short_with_ids, by="data_id")
 ```
 
 
 ```{r}
-Complex_with_predictors %>%
+Vocab_with_predictors %>%
   summarise(
     age_missing = sum(is.na(age)), 
     ethnicity_missing = sum(is.na(ethnicity)), # Some ethnicity variables missing. 
@@ -398,36 +442,37 @@ Complex_with_predictors %>%
     college_grad = sum(is.na(college_grad))
   )
 
-table(Complex_with_predictors$age)
-table(Complex_with_predictors$ethnicity)
-table(Complex_with_predictors$sex)
-table(Complex_with_predictors$college_grad)
+table(Vocab_with_predictors$age)
+table(Vocab_with_predictors$ethnicity)
+table(Vocab_with_predictors$sex)
+table(Vocab_with_predictors$college_grad)
 ```
 
 ```{r}
-Complex_short2 <- data.frame(Complex_short) 
+#Vocab_short2 <- data.frame(Vocab_short) 
 
-#dif <- lordif(Complex_short2, 
-#              Complex_with_predictors$female,
+#dif <- lordif(Vocab_short2, 
+#              Vocab_with_predictors$female,
 #              criterion="Chisqr", 
 #              alpha = .01)
 
 #saveRDS(dif, "vocab_output/dif.rds")
 dif  <- readRDS("vocab_output/dif.rds")
-
 ```
+
 ```{r}
 dif
 ```
+
 ```{r}
 plot(dif)
 ```
-A lot o items were flagged, but given the relatively small values of the diference beween intial and pure variables I'm not overly concerned. 
+A lot o items were flagged, but given the relatively small values of the difference between initial and pure variables I'm not overly concerned. 
 ```{r}
-#dif2 <- lordif(Complex_short2, 
-              Complex_with_predictors$college_grad,
-              criterion="Chisqr", 
-              alpha = .01)
+#dif2 <- lordif(Vocab_short2, 
+#              Vocab_with_predictors$college_grad,
+#              criterion="Chisqr", 
+#              alpha = .01)
 #saveRDS(dif2, "vocab_output/dif2.rds")
 dif2  <- readRDS("vocab_output/dif2.rds")
 ```
@@ -437,10 +482,40 @@ plot(dif2)
 ```
 
 ```{r}
+Theta_logit <- fscores(m1, use_dentype_estimate=TRUE, full.scores.SE=TRUE) %>%
+  as_tibble() %>%
+  rename(Vocab_F = F1, Vocab_SE = SE_F1)
+```
+
+```{r}
+ggplot(Theta_logit, aes(x=M1_F, M1_SE)) + geom_point()
+```
+
+```{r}
+Theta_EH <- fscores(m3, use_dentype_estimate=TRUE, full.scores.SE=TRUE) %>%
+  as_tibble() %>%
+  rename(M3_F = F1, M3_SE = SE_F1)
+
+ggplot(Theta_EH, aes(x=M3_F, M3_SE)) + geom_point()
+```
+
+```{r}
+Final_vocab <- Vocab_with_predictors %>%
+  mutate(
+    Total_Vocab = rowSums(.[,9:486])
+  ) %>%
+ dplyr::select(data_id, Total_Vocab) %>%
+  bind_cols(., Theta_logit)
+```
+
+```{r}
+ggplot(Final_vocab, aes(x=Vocab_F, y=Total_Vocab)) + geom_point()
+```
+
+```{r}
+write.csv(Final_vocab, "files/vocab.csv")
 ```
 
 ```{r}
 ```
 
-```{r}
-```
