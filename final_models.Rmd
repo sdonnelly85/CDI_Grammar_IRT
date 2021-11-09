@@ -1,0 +1,121 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+ 
+
+```{r}
+library(tidyverse)
+library(brms)
+library(patchwork)
+```
+
+```{r}
+vocab <- read_csv("files/vocab.csv")
+grammar <- read_csv("files/grammar.csv")
+```
+
+```{r}
+complete <- left_join(grammar, vocab, by="data_id")
+```
+
+
+# Raw data
+```{r}
+m1 <- brm(total ~ Total_Vocab, data=complete, file="bayes_models/m1.rds")
+```
+
+```{r}
+summary(m1)
+pp_check(m1)
+```
+
+```{r}
+m2 <- brm(total ~ s(Total_Vocab), data=complete, file="bayes_models/m2.rds")
+```
+
+```{r}
+summary(m2)
+pp_check(m2)
+```
+
+```{r}
+loo(m1, m2)
+```
+
+```{r}
+m3 <- brm(total ~ s(Total_Vocab), family="poisson", data=complete, file="bayes_models/m3.rds")
+```
+
+```{r}
+summary(m3)
+pp_check(m3)
+```
+
+
+
+```{r}
+p1 <- plot(conditional_effects(m1), points=TRUE)
+p2 <- plot(conditional_effects(m2), points=TRUE)
+p3 <- plot(conditional_effects(m3), points=TRUE)
+```
+
+# 
+```{r}
+ggplot(complete, aes(x=Vocab_F, y=M1_F)) + geom_point() + stat_smooth(method="loess")
+ggplot(complete, aes(x=Vocab_F, y=M2_F)) + geom_point() + stat_smooth(method="loess")
+ggplot(complete, aes(x=Vocab_F, y=M3_F)) + geom_point() + stat_smooth(method="loess")
+```
+# 2Pl model
+```{r}
+m4 <- brm(M1_F ~ Vocab_F, data=complete, file="bayes_models/m4.rds")
+```
+```{r}
+summary(m4) 
+pp_check(m4)
+```
+
+```{r}
+m5 <- brm(M1_F | mi(M1_SE) ~ Vocab_F, data=complete, file="bayes_models/m5.rds")
+```
+
+```{r}
+summary(m5)
+pp_check(m5)
+```
+
+Can't get this to run yet. Maybe try higher adapt delta, which seems to clean things up a bit, but will take some time to run. 
+```{r}
+m6 <- brm(M1_F | mi(M1_SE) ~ me(Vocab_F, Vocab_SE), data=complete, save_mevars = TRUE, control=list(adapt_delta=.99), file="bayes_models/m6.rds")
+```
+
+```{r}
+summary(m6)
+```
+```{r}
+posterior_summary(m6) %>%
+  round(2)
+```
+
+```{r}
+m7 <- brm(M1_F | mi(M1_SE) ~ s(Vocab_F), data=complete, file="bayes_models/m7.rds")
+```
+
+```{r}
+summary(m7)
+pp_check(m7)
+```
+```{r}
+p5 <- plot(conditional_effects(m4), points=TRUE)
+p6 <- plot(conditional_effects(m7), points=TRUE)
+```
+
+
+```{r}
+m4 <- brm(M1_F ~ M1_Vocab, data=complete, file="bayes_models/m4.rds")
+```
+
+```{r}
+m4 <- brm(M1_F ~ M1_Vocab, data=complete, file="bayes_models/m4.rds")
+```
