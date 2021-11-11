@@ -1,121 +1,422 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: Looking at relationship between vocabulary and grammar.
+author: Seamus Donnelly
+date created: "October, 26, 2021"
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
 
  
-
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(brms)
 library(patchwork)
+library(rstatix)
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 vocab <- read_csv("files/vocab.csv")
 grammar <- read_csv("files/grammar.csv")
+complete <- left_join(grammar, vocab, by="data_id")
+
+complete %>%
+  dplyr::select(-"data_id") %>%
+  get_summary_stats(type="common") # vocab only open classed items (nouns and predicates)
+```
+One Grammar LV wasn't matched to Vocabulary. Find out why this is. I doubt it makes a difference. 
+```{r}
+complete <- complete %>%
+  filter(!is.na(Total_Vocab))
+```
+
+
+```{r}
+grammar_dens <- complete %>%
+  dplyr::select("M1_F", "M2_F") %>%
+  pivot_longer(everything(), names_to="model", values_to="theta") %>%
+  ggplot(aes(x=theta, fill=model)) + geom_density(alpha = .2) +
+  ggtitle("Distribution of Theta") + theme_minimal()
+
+vocab_dens <- complete %>%
+  ggplot(aes(x=Vocab_F)) + geom_density(alpha = .2) +
+  ggtitle("Distribution of Theta") + theme_minimal()
+
+vocab_dens | grammar_dens 
 ```
 
 ```{r}
-complete <- left_join(grammar, vocab, by="data_id")
+p1 <- ggplot(complete, aes(x=M1_F, y=M1_SE)) + geom_point()
+p2 <- ggplot(complete, aes(x=M2_F, y=M2_SE)) + geom_point()
+p3 <- ggplot(complete, aes(x=Vocab_F, y=Vocab_SE)) + geom_point()
+
+(p1 | p2)/p3
 ```
 
+# Fit Models to Raw data
 
-# Raw data
+Fit linear model to the raw data. 
 ```{r}
 m1 <- brm(total ~ Total_Vocab, data=complete, file="bayes_models/m1.rds")
-```
-
-```{r}
 summary(m1)
 pp_check(m1)
 ```
+The posterior predictive distribution fits poorly. 
 
+Add smoothing. 
 ```{r}
 m2 <- brm(total ~ s(Total_Vocab), data=complete, file="bayes_models/m2.rds")
-```
-
-```{r}
 summary(m2)
 pp_check(m2)
 ```
+This still fits poorly, though it's definitely a bit better. 
 
+Let's compare the two models. 
 ```{r}
 loo(m1, m2)
 ```
 
+The model with the spline fits better. 
+
+
+Change likelihood to poisson
 ```{r}
 m3 <- brm(total ~ s(Total_Vocab), family="poisson", data=complete, file="bayes_models/m3.rds")
-```
-
-```{r}
 summary(m3)
 pp_check(m3)
 ```
-
-
-
+Plot predictions from all three models against the raw data
 ```{r}
 p1 <- plot(conditional_effects(m1), points=TRUE)
 p2 <- plot(conditional_effects(m2), points=TRUE)
 p3 <- plot(conditional_effects(m3), points=TRUE)
 ```
 
-# 
+
+```{r}
+m_test <- brm((bf(total ~ Total_Vocab, zi ~ Total_Vocab + age), family=zero_inflated_poisson, data=complete, file="bayes_models/mtest.rds")
+```
+
+
+# Fit models full data
+
+## 2pl model
+
+Plot factors against one another
 ```{r}
 ggplot(complete, aes(x=Vocab_F, y=M1_F)) + geom_point() + stat_smooth(method="loess")
-ggplot(complete, aes(x=Vocab_F, y=M2_F)) + geom_point() + stat_smooth(method="loess")
-ggplot(complete, aes(x=Vocab_F, y=M3_F)) + geom_point() + stat_smooth(method="loess")
 ```
-# 2Pl model
+Factor scores -- no error (just for completeness)
 ```{r}
 m4 <- brm(M1_F ~ Vocab_F, data=complete, file="bayes_models/m4.rds")
-```
-```{r}
 summary(m4) 
 pp_check(m4)
 ```
-
+Add error for grammar factor score. 
 ```{r}
-m5 <- brm(M1_F | mi(M1_SE) ~ Vocab_F, data=complete, file="bayes_models/m5.rds")
-```
-
-```{r}
+m5 <- brm(M1_F | mi(M1_SE) ~ Vocab_F, data=complete, save_mevars = TRUE, file="bayes_models/m5.rds")
 summary(m5)
 pp_check(m5)
 ```
 
+```{r}
+posterior_summary(m5) %>%
+  data.frame() %>%
+  rownames_to_column("terms") %>%
+   filter(str_detect(terms, "Yl"))
+```
+
+```{r}
+d <- tibble(
+  ID = complete %>% pull(data_id),
+  G1_obs = complete %>% pull(M1_F),
+  V1_obs = complete %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m5) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+
+
 Can't get this to run yet. Maybe try higher adapt delta, which seems to clean things up a bit, but will take some time to run. 
 ```{r}
-m6 <- brm(M1_F | mi(M1_SE) ~ me(Vocab_F, Vocab_SE), data=complete, save_mevars = TRUE, control=list(adapt_delta=.99), file="bayes_models/m6.rds")
+#m6 <- brm(M1_F | mi(M1_SE) ~ me(Vocab_F, Vocab_SE), data=complete, save_mevars = TRUE, control=list(adapt_delta=.99, max_treedepth=15), file="bayes_models/m6.rds")
+#summary(m6)
+#posterior_summary(m6) %>%
+#  round(2)
 ```
 
-```{r}
-summary(m6)
-```
-```{r}
-posterior_summary(m6) %>%
-  round(2)
-```
 
 ```{r}
-m7 <- brm(M1_F | mi(M1_SE) ~ s(Vocab_F), data=complete, file="bayes_models/m7.rds")
-```
-
-```{r}
+m7 <- brm(M1_F | mi(M1_SE) ~ s(Vocab_F), data=complete, save_mevars = TRUE, file="bayes_models/m7.rds")
 summary(m7)
 pp_check(m7)
 ```
+```{r}
+d <- tibble(
+  ID = complete %>% pull(data_id),
+  G1_obs = complete %>% pull(M1_F),
+  V1_obs = complete %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m7) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
 ```{r}
 p5 <- plot(conditional_effects(m4), points=TRUE)
 p6 <- plot(conditional_effects(m7), points=TRUE)
 ```
 
+```{r}
+loo(m5, m7)
+```
+
+
+## EH Model
+
 
 ```{r}
-m4 <- brm(M1_F ~ M1_Vocab, data=complete, file="bayes_models/m4.rds")
+
+ggplot(complete, aes(x=Vocab_F, y=M2_F)) + geom_point() + stat_smooth(method="loess")
 ```
 
 ```{r}
-m4 <- brm(M1_F ~ M1_Vocab, data=complete, file="bayes_models/m4.rds")
+m8 <- brm(M2_F ~ Vocab_F, data=complete, file="bayes_models/m8.rds")
+summary(m8) 
+pp_check(m8)
 ```
+
+```{r}
+m9 <- brm(M2_F | mi(M2_SE) ~ Vocab_F, save_mevars = TRUE,  data=complete, file="bayes_models/m9.rds")
+summary(m9)
+pp_check(m9)
+```
+
+```{r}
+m10 <- brm(M2_F | mi(M2_SE) ~ s(Vocab_F), save_mevars = TRUE,  data=complete, file="bayes_models/m10.rds")
+summary(m10)
+pp_check(m10)
+```
+
+```{r}
+p9 <- plot(conditional_effects(m9), points=TRUE)
+p10 <- plot(conditional_effects(m10), points=TRUE)
+```
+```{r}
+d <- tibble(
+  ID = complete %>% pull(data_id),
+  G1_obs = complete %>% pull(M1_F),
+  V1_obs = complete %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m9) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+```{r}
+d <- tibble(
+  ID = complete %>% pull(data_id),
+  G1_obs = complete %>% pull(M1_F),
+  V1_obs = complete %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m10) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+# Drop floor and ceiling cases. 
+
+
+```{r}
+complete %>%
+  summarise(
+    min = min(M1_F), 
+    max = max(M1_F)
+  )
+```
+
+
+## 2PL model
+```{r}
+m11 <- complete %>%
+  filter(M1_F > -1	& M1_F < 2) %>%
+  brm(M1_F | mi(M1_SE) ~ Vocab_F, ., save_mevars = TRUE, file = "bayes_models/m11.rds")
+summary(m11)
+pp_check(m11)
+```
+```{r}
+d <- tibble(
+  ID = filter(complete, M1_F > -1	& M1_F < 2) %>% pull(data_id),
+  G1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(M1_F),
+  V1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m11) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+```{r}
+m12 <- complete %>%
+  filter(M1_F > -1	& M1_F < 2) %>%
+  brm(M1_F | mi(M1_SE) ~ s(Vocab_F), ., save_mevars = TRUE, file = "bayes_models/m12.rds")
+summary(m12)
+pp_check(m12)
+```
+
+```{r}
+d <- tibble(
+  ID = filter(complete, M1_F > -1	& M1_F < 2) %>% pull(data_id),
+  G1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(M1_F),
+  V1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m12) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+```{r}
+loo(m11, m12)
+```
+
+```{r}
+p11<- plot(conditional_effects(m11), points=TRUE)
+p12 <- plot(conditional_effects(m12), points=TRUE)
+```
+
+## EH Model
+```{r}
+m13 <- complete %>%
+  filter(M1_F > -1	& M1_F < 2) %>%
+  brm(M2_F | mi(M2_SE) ~ Vocab_F, ., save_mevars = TRUE, file = "bayes_models/m13.rds")
+summary(m13)
+pp_check(m13)
+```
+
+```{r}
+m14 <- complete %>%
+  filter(M1_F > -1	& M1_F < 2) %>%
+  brm(M2_F | mi(M2_SE) ~ s(Vocab_F), ., save_mevars = TRUE, file = "bayes_models/m14.rds")
+summary(m14)
+pp_check(m14)
+```
+```{r}
+loo(m13, m14)
+```
+```{r}
+d <- tibble(
+  ID = filter(complete, M1_F > -1	& M1_F < 2) %>% pull(data_id),
+  G1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(M1_F),
+  V1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m13) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+```{r}
+d <- tibble(
+  ID = filter(complete, M1_F > -1	& M1_F < 2) %>% pull(data_id),
+  G1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(M1_F),
+  V1_obs = filter(complete, M1_F > -1	& M1_F < 2)  %>% pull(Vocab_F), 
+  G1_est = posterior_summary(m14) %>%
+    data.frame() %>%
+    rownames_to_column("term") %>%
+    filter(str_detect(term, "Yl")) %>%
+    pull(Estimate)) %>%
+    pivot_longer(-c(ID, V1_obs), values_to="g") %>%
+    mutate(
+      name = ifelse(name == "G1_obs", "observed", "posterior")
+    )
+
+ggplot(d, aes(x=V1_obs, y = g)) +
+  geom_line(aes(group = ID),
+            size = 1/4) +
+  geom_point(aes(color = name))
+```
+
+
+
+
+```{r}
+#m13 <- complete %>%
+#  filter(M1_F > -1	& M1_F < 2) %>%
+#  brm(M1_F | mi(M1_SE) ~ me(Vocab_F, Vocab_SE), ., file = "bayes_models/m13.rds", 
+#      control=list(adapt_delta = .95, max_treedepth = 15))
+```
+
+
