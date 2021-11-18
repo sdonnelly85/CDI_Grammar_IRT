@@ -24,6 +24,7 @@ library(GGally) # More plottinng options.
 library()
 ```
 
+This is an old script. It was the first script I created doing IRT to (a) learn how wordbank worked, (b) learn the IRT software and (c) present a presentation to Caro and Evan. This has a lot of data processing steps in it. I *don't* know that these are the most up to date versions of the data processing pipeline. I'm keeping this script for the purpose of documentation, but I don't recommend using it for anything. 
 
 # A quick intro to IRT
 

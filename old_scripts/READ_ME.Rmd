@@ -1,0 +1,6 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This folder contains olds scripts that were not relevant to the final analyses in this project. In general, these initial practice version of the analyses that I ran to understand various aspects of the wordbank dataset and IRT modeling in R. None of these practice anlayses are related to substantive questions of interest -- the relationship between vocabulary and grammar -- and they contain early attempts to manipulate wordbank data, test various specifications of the IRT models, etc. For each file there is a detailed description of what the goal of that script was. Data processing in these scripts does not reflect the most up to date pipeline. 

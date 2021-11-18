@@ -24,10 +24,10 @@ library(GGally) # More plottinng options.
 library(lordif) # differential item functioning.
 library(sirt) # additional IRT functions
 library(vegan)
+library(kableExtra)
 ```
 
-In our meeting on 01/09/2021, we discussed the possibility that our sample was a mixture of children, grammatical kids and pre-grammatical kids. We said one way to remove the pre-grammatical kids would be to exclude kids who have a 0 on the variable indicating whether children combine words. Additionaly in a meeting with Jay we discussed a problematic pattern of discrimination parameters--in particular there was a strong correlation between discrimination and difficulty parameters. This could reflect a problematic 
-
+Get data
 ```{r}
 Inst <- get_instrument_data(language="English (American)", form="WS")
 Admin <- get_administration_data(language="English (American)", form="WS")
@@ -42,24 +42,15 @@ Complex <- Admin %>%
   full_join(., Item, by="num_item_id") %>%
   filter(longitudinal==FALSE) %>%
   filter(type == "combine" | 
-           type == "complexity" |
-           type == "word_endings" |
-           type== "word_forms_nouns" |
-           type == "word_forms_verbs" | 
-           type == "word_endings_nouns" |
-           type == "word_endings_verbs"
+           type == "complexity" 
          ) %>%
   mutate(
     out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
                  no = ifelse(value=="often", yes=2, no =0))
   ) 
+
 N_complexity_items = nrow(filter(Item, type == "combine" | 
-           type == "complexity" |
-           type == "word_endings" |
-           type== "word_forms_nouns" |
-           type == "word_forms_verbs" | 
-           type == "word_endings_nouns" |
-           type == "word_endings_verbs"))
+           type == "complexity"))
 
 nrow(Complex) == (N_total - N_long)*N_complexity_items
 ```
@@ -71,7 +62,7 @@ Complex %>%
   group_by(definition) %>%
   count()
 ```
-Ok, it's only the combine variable and word endings variables -- that's right. 
+Ok, it's only the combine variable  -- that's right. 
 
 ## Data Screening
 Let's see how many missing values there are. 
@@ -81,12 +72,14 @@ Complex %>%
   group_by(definition) %>%
   count() 
 ```
-Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word forms, and 1 who doesn't have word endings.
+Looks like there are 1426 participants don't have item-level complexity scores. 
 
 ```{r}
 N_na = 1426
 ```
 
+
+Create a variable that describes the 
 ```{r}
 Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
 ```
@@ -102,9 +95,15 @@ Complex %>%
     sum=sum(out),
     category = first(complexity_category)
   ) %>%
+  ungroup() %>%
   arrange(category) %>%
-  kable(caption="Means and SDs for Each Item (Arranged by Item)")
+  kable(caption="Means and SDs for Each Item (Arranged by Item)")# %>%
+  #kable_classic(full_width = F, html_font = "Cambria") %>%
+  #save_kable("table1.pdf")
+  
 ```
+
+
 ```{r}
 Complex %>%
   filter(!is.na(out)) %>%
@@ -116,12 +115,6 @@ Complex %>%
   ) %>%
   ggplot(aes(x=cat2, y= mean)) + geom_boxplot() 
 ```
-It seems like the word endings and the combine words variable have higher means than the morphological and syntactic complexity items (though they are ordinal, but when I treated these as binary in an older version the results were similar). The over-regularization items have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
-
-One difficulty I just thought of is that the we would expect the word form and over-regularization to be non-monotonicaly related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
-
-Therefore, I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
-
 ## Data Preparation
 Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
 
@@ -137,7 +130,6 @@ Complex_short_with_ids <- Complex %>%
 
 nrow(Complex_short_with_ids) == N_total - N_long - N_na
 
-
 Complex_short_grammatical <- Complex_short_with_ids %>%
   filter(combine760 > 0) %>%
   dplyr::select(starts_with(c("morphology", "syntax"))) # need to get rid of participant names for IRT models. 
@@ -151,8 +143,6 @@ nrow(Complex_short_grammatical) == N_total - N_long - N_na -N_nog
 ## Dimensionality Assessment
 Prior to fitting the IRT model, it's worth looking at the correlation structure of the data to get a sense of the possible dimensionality. 
 
-
-### First for grammatical kids only
 Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
 ```{r}
 Complex_tetra <- tetrachoric(Complex_short_grammatical)
@@ -179,7 +169,6 @@ fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2188)
 ```{r}
 vss(rho, cor="tetra", n.obs = 2188)
 ```
-
 
 # IRT: Grammatical only
 ## 2pl model

@@ -1,0 +1,25 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Folder Contents: 
+
+R Markdown Files 
+CDI_Grammar_MutlipleLVs - contains code for IRT Analyses of CDI complexity scales. This includes descriptive statistics of the scale itself, code fitting IRT models, assuming 3 different latent variable distributions, and it saves a dataset with latent variable values for every participant. 
+
+CDI_vocab - conatains code for IRT analyses of vocab scale. This includes descriptive statistics of the scale itself, code fitting IRT models, and it saves a dataset with latent variable values for every participant. 
+
+Final_models - contains models looking at the relationship between the LVs for vocabulary and grammar. Reads data from files and outputs data to bayes models. 
+
+Grammatical_Only_vs_All_Participants - contains some analyses comparing the 2PL model on data from (a) all participants who we have any score for and (b) participants who are combining words. It contains some summary statistics, as well ad comparisons of IRT models on these two datasets. There aren't huge differences, except that the discrimination and difficulty parameters for the model of only participants who are grammatical are a bit better. Given that the combine variable seems to provide a fairly unambiguous measure of whether a participant is grammatical, we decided to only include these data points in our primary analyses above. 
+
+Folders:
+
+old_scripts - contains various old scripts associated with these projects. Many of these invovled working out how to do various things with wordbank and MIRT. See README therein for more descriptions. They are not necessary for the primary analyses in this project. 
+
+files - contains datasets without outputs from CDI_Grammar_MultipleLVs and CDI_Vocab. These are datasets with latent variables and standard errors for each participant. These are used by final_models. 
+
+vocab_output - the vocabulary dataset contains a lot of items. Several of the IRT models in this dataset have been saved to vocab_output so they don't need to be re-run every time I look at that script. 
+
+bayes_models - models from brms run in final_models. 

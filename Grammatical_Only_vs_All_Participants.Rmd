@@ -27,6 +27,8 @@ library(lordif) # differential item functioning.
 
 In our meeting on 01/09/2021, we discussed the possibility that our sample was a mixture of children, grammatical kids and pre-grammatical kids. We said one way to remove the pre-grammatical kids would be to exclude kids who have a 0 on the variable indicating whether children combine words, and on any of the morphological variables. One concern is whether kids who are not combining words but are using ing, ed or s. It's not clear whether these kids are pre-grammatical or not. 
 
+I made a change to this script on 18/11/2021. I got rid of the wordform and over-regularization items. These were carried over from the previous script. 
+
 Download data from Word Bank:
 ```{r get data}
 Inst <- get_instrument_data(language="English (American)", form="WS")
@@ -41,11 +43,7 @@ Complex <- Admin %>%
   filter(longitudinal==FALSE) %>%
   filter(type == "combine" | 
            type == "complexity" |
-           type == "word_endings" |
-           type== "word_forms_nouns" |
-           type == "word_forms_verbs" | 
-           type == "word_endings_nouns" |
-           type == "word_endings_verbs"
+           type == "word_endings" 
          ) %>%
   mutate(
     out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
@@ -70,10 +68,20 @@ Complex %>%
   group_by(definition) %>%
   count() 
 ```
+1426 participants are missing complexity items. 1403 are missing word endings. Let's see if any word endings are missing for participants who have complexity scores. 
 
-Looks like there are 1426 participants don't have item-level complexity scores. There are a further 2 who don't have word forms, and 1 who doesn't have word endings. 
+```{r}
+Complex %>%
+  dplyr::select("data_id", "definition", "out") %>%
+  pivot_wider(id_cols = data_id, 
+              names_from = definition, 
+              values_from = out) %>%
+  filter(is.na(spossess) & !is.na(`two shoe / two shoes`))
+```
 
+So another 2 participants are missing word endings but have complexity scores. 
 
+Make complexity category score, which will be used for making output easier to look at, 
 ```{r}
 Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
 ```
@@ -105,13 +113,6 @@ Complex %>%
   ggplot(aes(x=cat2, y= mean)) + geom_boxplot() 
 ```
 
-It seems like the word endings and the combine words variable have higher means than the morphological and syntactic complexity items (though they are ordinal, but when I treated these as binary in an older version the results were the same). The over-regularization items have very low means, and the word forms looks a bit like the syntactic and morphological complexity. 
-
-
-One difficulty I just thought of is that the we would expect the word form and over-regularizations to be non-monotonially related to overall grammatical proficiency, given the inverse u shaped curve we typically see in the development of morphology. 
-
-Therefore, I'm going to first add the combine item and the word endings variables, see how that changes the results of the IRT model, and then plot the over-regularization and word form scores against this, to see if we see the non-monotonicity. 
-
 ## Data Preparation
 Prepare data set for IRT modeling. I'm going to re-name each item to its category (morphology or syntax) and its item number so as to make some graphs easier to read. 
 
@@ -121,8 +122,7 @@ Complex_short_with_ids <- Complex %>%
   mutate(
     label = str_c(complexity_category, num_item_id)
   ) %>%
-  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
-  drop_na()
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") 
 
 
 Complex_short <- Complex_short_with_ids %>%
@@ -130,7 +130,7 @@ Complex_short <- Complex_short_with_ids %>%
 ```
 
 
-Quick test of the possibility that 
+Quick test of the possibility that some kids have a 0 for combine words but a 1 for something else. 
 ```{r}
 Complex_short %>%
   filter(combine760==0) %>%
@@ -143,9 +143,19 @@ Complex_short %>%
   count()
   
 ```
+So, there are 600 kids with a 0 on combines words. Of those, 107 kids are producing morphological forms. I think it makes sense to be conservative about who's grammatical and exclude those 107 kids. I'm going to make two datasets for the IRT models: one including all participants and one including those who met our stringent definition of grammatical.
 
-So, there are 600 kids with a 0 on combines words. Of those, 107 kids are producing morphological forms. I think it makes sense to be conservative about who's grammatical and exclude those 107 kids. I'm going to make two datasets for the IRT models: one including all participants and one including those who met our stringent definition of grammatical. 
+We'll now drop the word endings and NAs. 
+```{r}
+Complex_short <- Complex_short %>%
+  dplyr::select(starts_with(c("combine", "morphology", "syntax"))) %>%
+  drop_na()
 
+nrow(Complex_short) == 4214 - 1426 # Just a quick sanity check. 
+```
+
+
+Now we'll make two datasets for the subsequent analyses: one with only participants who are combining words and one with kids who are not yet combining words. 
 ```{r}
 Complex_short_grammatical <- Complex_short %>%
   filter(combine760 > 0) %>%
@@ -156,8 +166,7 @@ Complex_short_all <- Complex_short %>%
 ```
 
 ## Dimensionality Assessment
-Prior to fitting the IRT model, it's worth looking at the correlation structure of the data to get a sense of the possible dimensionality. 
-
+We'll do the inital dimensionality checks on both of these datasets. 
 
 ### First for grammatical kids only
 Create tetrachoric correlation matrix (for binary data). I created a vector with labels, for labeling of the correlation plot. 
@@ -173,21 +182,23 @@ Check out the correlations
 corPlot(rho, labels=lab)
 ```
 
-They look really high. Let's examine the dimensionality, using princals, which is basically just a version of PCA that is appropriate for categorical data. 
+
 ```{r}
 pc <- princals(rho)
 
 plot(pc)
 ```
-
+Princals suggests a few items are acting strangely. 
 ```{r , message=FALSE, error=FALSE}
-fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2185)
+fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2188)
 ```
 
 
 ```{r}
-vss(rho, cor="tetra", n.obs = 2185)
+vss(rho, cor="tetra", n.obs = 2188)
 ```
+
+VSS and parallel analysis suggest 1 dimensional solution is okay, though there's a bit of multidimensionality in the Princals plot. 
 
 ### All Kids
 ```{r}
@@ -210,15 +221,15 @@ plot(pc)
 ```
 
 ```{r , message=FALSE, error=FALSE}
-fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2785)
+fa.parallel(rho, fa="fa", cor="tetra", n.obs = 2788)
 ```
 
 
 ```{r , message=FALSE, error=FALSE}
-vss(rho, cor="tetra", n.obs = 2785)
+vss(rho, cor="tetra", n.obs = 2788)
 ```
 
-It seems like the one factor solution is most plausible for both the full dataset and the dataset with grammatical kids. One obvious difference, though, is that in the princal plot for the grammatical dataset a few items appeared to differ quite differntly from the others. I'm first going to do some IRT with the grammatical-only dataset, and I'm goig to see if those vectors were a quirk of the scaling
+It seems like the one factor solution is most plausible for both the full data set and the dataset with grammatical kids. One obvious difference, though, is that in the princal plot for the grammatical data set a few items appeared to differ quite differently from the others. I'm first going to do some IRT with the grammatical-only data set, and I'm goig to see if those vectors were a quirk of the scaling
 
 # IRT: Grammatical only
 ## 2pl model
@@ -230,6 +241,7 @@ m1 <- mirt(Complex_short_grammatical, 1, itemtype="2PL")
 ```{r}
 m1
 ```
+
 ```{r}
 summary(m1)
 ```
@@ -238,6 +250,7 @@ Let's check the overall fit of the model. The chi square statistic here isn't su
 ```{r}
 M2(m1)
 ```
+
 ```{r}
 itemfit(m1)
 ```
@@ -304,7 +317,7 @@ Next let's look at the relationship between the true scores and the raw scores.
 true_raw <- Complex_short_grammatical %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
-    Theta = fscores(m1, method="MAP")
+    Theta = fscores(m1)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
@@ -316,7 +329,7 @@ raw_score <- Complex_short_grammatical %>%
 
 true_score <- Complex_short_grammatical %>%
   mutate(
-    Theta = fscores(m1, method="MAP")
+    Theta = fscores(m1)
     ) %>% 
    ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
 
@@ -328,14 +341,8 @@ true_raw/(true_score + raw_score)
 We still have a bunch of 0s. 
 
 
-
-
 ## Thinking Through the Assumptions of the 2PL model 
-It's important to remember that these latent variables are only interpretable if the following conditions hold:
-1. The assumption of unidimensionality is appropriate. 
-2. The assumed distributional form of the latent variable is correct. 
-3. Measurement invariance holds: the items behave the same way across different groups of participants.
-
+Given the differences in dimensionality in the exploratory FA stuff above. It's important to assess the dimensionality of each of these datasets using the IRT models. 
 
 ### Dimensionality
 Exploratory 2 dimensional IRT. 
@@ -349,17 +356,19 @@ M2(m2)
 anova(m1, m2)
 summary(m2, "oblimin", suppress=.20)
 ```
+
 ```{r}
 Complex_short_grammatical %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
-    Theta1 = fscores(m2, method="MAP")[,1], 
-    Theta2 = fscores(m2, method="MAP")[,2]
+    Theta1 = fscores(m2)[,1], 
+    Theta2 = fscores(m2)[,2]
   ) %>%
   dplyr::select(Raw, Theta1, Theta2) %>%
   ggpairs()
 
 ```
+
 Could this be due to morphological vs syntactic complexity items?
 ```{r, warning=FALSE, message=FALSE}
 model.1 <- mirt.model('
@@ -373,6 +382,21 @@ M2(m3)
 
 summary(m3)
 ```
+
+```{r}
+Complex_short_grammatical %>%
+  mutate(
+    Raw = rowSums(.[,1:37]), 
+    Theta1 = fscores(m3)[,1], 
+    Theta2 = fscores(m3)[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+
+
 ```{r}
 M2(m3)
 ```
@@ -381,6 +405,7 @@ M2(m3)
 anova(m3, m2)
 anova(m3, m1)
 ```
+
 ### Semi-parametric latent variables. 
 ```{r, warning=TRUE, message=TRUE}
 m1_nonpar <- mirt(Complex_short_grammatical, 1, itemtype="2PL", dentype = "EH", verbose=FALSE)
@@ -391,25 +416,8 @@ M2(m1_nonpar)
 ```{r}
 Complex_short_grammatical %>%
   mutate(
-    Theta_EH = fscores(m1_nonpar, method="MAP"), 
-    Theta_gauss = fscores(m1, method="MAP")
-  ) %>%
-  ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
-
-
-```
-
-```{r, warning=TRUE, message=TRUE}
-m1_nonpar <- mirt(Complex_short_grammatical, 1, itemtype="2PL", dentype = "EHW", verbose=FALSE)
-
-M2(m1_nonpar)
-```
-
-```{r}
-Complex_short_grammatical %>%
-  mutate(
-    Theta_EH = fscores(m1_nonpar, method="MAP"), 
-    Theta_gauss = fscores(m1, method="MAP")
+    Theta_EH = fscores(m1_nonpar, use_dentype_estimate=TRUE), 
+    Theta_gauss = fscores(m1)
   ) %>%
   ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
@@ -487,11 +495,14 @@ ggplot(coefs_2pl,
   xlab("Discrimination") + 
   ylab("Difficulty") + theme_minimal()
 ```
+Distribution of IRT parameters is a bit more extreme than in the gramatical only dataset. 
+
+
 ```{r}
 true_raw <- Complex_short_all %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
-    Theta = fscores(m4, method="MAP")
+    Theta = fscores(m4)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
@@ -503,7 +514,7 @@ raw_score <- Complex_short_all %>%
 
 true_score <- Complex_short_all %>%
   mutate(
-    Theta = fscores(m4, method="MAP")
+    Theta = fscores(m4)
     ) %>% 
    ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
 
@@ -530,8 +541,8 @@ summary(m5, "oblimin", suppress=.20)
 Complex_short_all %>%
   mutate(
     Raw = rowSums(.[,1:37]), 
-    Theta1 = fscores(m5, method="MAP")[,1], 
-    Theta2 = fscores(m5, method="MAP")[,2]
+    Theta1 = fscores(m5)[,1], 
+    Theta2 = fscores(m5)[,2]
   ) %>%
   dplyr::select(Raw, Theta1, Theta2) %>%
   ggpairs()
@@ -551,7 +562,24 @@ M2(m6)
 summary(m6)
 ```
 
-```{r}
-anova(m6, m4)
+```{r, warning=TRUE, message=TRUE}
+m4_nonpar <- mirt(Complex_short_all, 1, itemtype="2PL", dentype = "EH", verbose=FALSE)
+
 ```
 
+```{r}
+Complex_short_all %>%
+  mutate(
+    Theta_EH = fscores(m4_nonpar, use_dentype_estimate=TRUE), 
+    Theta_gauss = fscores(m4)
+  ) %>%
+  ggplot(aes(x=Theta_EH, y=Theta_gauss)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
+```
+Distribution looks pretty similar to other dataset. 
+
+
+```{r}
+```
+
+```{r}
+```

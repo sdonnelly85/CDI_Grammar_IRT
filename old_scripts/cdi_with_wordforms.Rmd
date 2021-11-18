@@ -24,6 +24,8 @@ library(GGally) # More plottinng options.
 library(lordif) # differential item functioning.
 ```
 
+This is an old script. I was exploring whether we could include the the other grammatical items to the IRT model of syntactic complexity, so as to get information about some of the participants whose parents reported that they weren't producing any of the relatively complex items on the CDI. I tried considering the various word form subscales, which ask about various forms of regular and irregular morphological marking. 
+
 
 In our meeting on 28/June/2021, we noted that by adding Word Forms, we might be able to model some of the intermediate levels of syntactic proficiency between the 0 and 1 items on the complexity scale. I'm going to start with adding word endings and combines as those seem like the most straight forward. The problem with the word forms and word endings is that we expect them to by non-monotonically related to language proficiency, so I'm no sure how well they'll fit this model. I've also made a new branch on github because I realized I could maintain the ordinal scale of the ordinal items, and use an ordinal IRT model -- since binary items are just ordinal items with 2 categories. This appears to be working alright, but I want to keep it in a second branch until I verify this is appropriate (I'm 95% sure it's right). 
 
@@ -146,7 +148,7 @@ Complex_poly <- polychoric(Complex_short)
 
 rho <- Complex_poly$rho
 
-lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38") # create labels for corPlot because the defintions are long and take up a ton of space
+lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42") # create labels for corPlot because the defintions are long and take up a ton of space
 ```
 Check out the correlations
 ```{r}
@@ -202,49 +204,13 @@ RMSEA and CFI are good, SRMSR is a bit high but pretty reasonable. We can see if
 itemfit(m1)
 ```
 
-A few items significantly misfit. Let's take everything with a p value less than .10. We'll look at item gam plots of those, which plot the item response probability against the latent variable using a gam function, to look for deviations in the item-response function.   
-
-```{r, message=FALSE, warning=FALSE}
-misfit <- itemfit(m1) %>% # Get labels of mis-fitting items. 
-  filter(p.S_X2 <= .10) %>%
-  dplyr::select(item) %>%
-  as.vector()
-
-items_good <- dplyr::select(Complex_short, -all_of(misfit$item)) # Well fitting items
-items_bad <- dplyr::select(Complex_short, all_of(misfit$item)) # Poorly fitting items
-
-mod_fit <- mirt(items_good, 1, "graded", verbose=FALSE) # Calculate factor scores using only the well fitting items. 
-Theta <- fscores(mod_fit)
-
-
-```
-# Plot non-linear item response theory curves with the factor scores 
-
-```{r}
-IG762<- itemGAM(items_bad$morphology762, Theta)
-IG764<- itemGAM(items_bad$morphology764, Theta)
-IG771<- itemGAM(items_bad$morphology771, Theta)
-IG783<- itemGAM(items_bad$syntax783, Theta)
-IG792<- itemGAM(items_bad$syntax792, Theta)
-
-```
-
-```{r}
-
-
-
-```
-
-
-
-
 
 Next let's look at the relationship between the true scores and the raw scores. 
 ```{r}
 true_raw <- Complex_short %>%
   mutate(
     Raw = rowSums(.[,1:42]), 
-    Theta = fscores(m1, method="MAP")
+    Theta = fscores(m1)
   ) %>%
   ggplot(aes(x=Theta, y=Raw)) + geom_point() + stat_smooth(method="loess") + theme_minimal()
 
@@ -256,7 +222,7 @@ raw_score <- Complex_short %>%
 
 true_score <- Complex_short %>%
   mutate(
-    Theta = fscores(m1, method="MAP")
+    Theta = fscores(m1)
     ) %>% 
    ggplot(aes(x=Theta)) + geom_histogram() + theme_minimal()
 
@@ -344,7 +310,7 @@ Complex_poly <- polychoric(Complex_short)
 rho <- Complex_poly$rho
 
 lab = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-"61", "62", "63", "64", "65", "66", "67") # create labels for corPlot because the defintions are long and take up a ton of space
+"61", "62", "63", "64", "65", "66", "67") # create labels for corPlot because the definitions are long and take up a ton of space
 ```
 
 ```{r}
@@ -356,7 +322,7 @@ pc <- princals(rho)
 
 plot(pc)
 ```
-Looks like there's a big clumb of vectors in one area but then way more pointing out in random directions, which I think will create some fit issues. 
+Looks like there's a big clump of vectors in one area but then way more pointing out in random directions, which I think will create some fit issues. 
 
 ```{r, message=FALSE, error=FALSE}
 fa.parallel(rho, fa="fa", cor="poly", n.obs = 2785)
@@ -375,7 +341,6 @@ summary(m2)
 M2(m2)
 ```
 
-
 ```{r}
 m2b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 ```
@@ -384,8 +349,21 @@ m2b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 summary(m2b, "oblimin", suppress=.20)
 ```
 
-
 It looks like the word forms are loading consistently on a different factor from the morphosyntactic complexity factor. 
+
+Let's look at the joint distribution of the two latent variables. 
+
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:67]), 
+    Theta1 = fscores(m2b)[,1], 
+    Theta2 = fscores(m2b)[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
 
 
 Another possibility is that all of those items are guesses--especially since they're means are all low. 
@@ -430,6 +408,19 @@ m3b <- mirt(Complex_short, 2, "graded", verbose=FALSE)
 summary(m3b, "oblimin", suppress=.20)
 ```
 
+```{r}
+Complex_short %>%
+  mutate(
+    Raw = rowSums(.[,1:87]), 
+    Theta1 = fscores(m3b)[,1], 
+    Theta2 = fscores(m3b)[,2]
+  ) %>%
+  dplyr::select(Raw, Theta1, Theta2) %>%
+  ggpairs()
+
+```
+
+
 As was the case with the word form variables, all of the word endings variables loaded onto a separate factor from the morphosyntactic complexity variables.  
 
 
@@ -443,6 +434,8 @@ It's difficult to say exactly what this means, as these results could plausibly 
 
 
 # Final Model
+
+Note on 18/11/2021. This section is mostly irrelevant. We decided to only include complexity scale items for participants whose parents reported that they were combining words. Therefore, we didn't include these other variables. 
 
 I think I'm going to stick with the model that includes the complexity variable and the word endings variables as they seem to increase the sensitivity of the model to lower proficiency children and do not appear to affect the dimensionality much. 
 
@@ -464,6 +457,7 @@ Complex_short <- Complex_short_with_ids %>%
 ```{r}
 summary(m1)
 ```
+
 ```{r}
 M2(m1)
 ```
