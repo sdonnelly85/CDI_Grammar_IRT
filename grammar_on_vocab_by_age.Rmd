@@ -1,0 +1,47 @@
+---
+title: 
+author: Seamus Donnelly
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(brms)
+library(patchwork)
+library(rstatix)
+```
+
+```{r}
+vocab <- read_csv("files/vocab.csv")
+grammar <- read_csv("files/grammar.csv")
+complete <- left_join(grammar, vocab, by="data_id")
+complete <- complete %>%
+  filter(!is.na(Total_Vocab))
+```
+
+
+```{r}
+m1 <- brm(M1_F | mi(M1_SE) ~ Vocab_F*age, data=complete, save_mevars = TRUE, file="bayes_models_test/m1.rds")
+summary(m1)
+```
+
+```{r}
+hypothesis(m1, "Vocab_F:age > 0")
+```
+
+
+
+
+
+```{r}
+
+```
+
+

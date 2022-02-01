@@ -1,0 +1,215 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+options(max.print=500)
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(ltm) # more IRT functions
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(GGally) # More plottinng options. 
+library(lordif) # differential item functioning.
+library(sirt) # additional IRT functions
+library(vegan)
+library(kableExtra)
+```
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS")
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+
+```{r}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>%
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+nrow(Complex) == (N_total - N_long)*N_complexity_items
+```
+
+```{r}
+Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
+```
+
+
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax"))) %>%
+  drop_na()
+
+
+Complex_short_grammatical <- Complex_short_with_ids %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(starts_with(c("morphology", "syntax"))) # need to get rid of participant names for IRT models. 
+
+N_nog <- nrow(filter(Complex_short_with_ids, combine760 == 0))
+
+```
+
+Make vocab dataset. 
+```{r}
+Vocab <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>% # remove longitudinal data set
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    )
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+nrow(Vocab) == (N_total - N_long)*N_vocab
+```
+
+```{r}
+Vocab_short_with_ids <- Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") %>%
+  drop_na() # drop participants with missing data
+
+
+Vocab_short <- Vocab_short_with_ids %>%
+  dplyr::select(-"data_id") # dataset for IRT can't have IDs
+
+#nrow(Vocab_short_with_ids) == N_total - N_long - N_missing # Looks good
+```
+
+
+Combine
+```{r}
+full <- full_join(
+  Complex_short_with_ids, Vocab_short_with_ids, by="data_id"
+) %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(-c("data_id", "combine760")) %>%
+  drop_na()
+```
+
+
+# Some quick checks of dimensionality. 
+
+```{r}
+full_tetra <- tetrachoric(full)
+
+rho <- full_tetra$rho
+```
+
+```{r}
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 2188)
+```
+
+```{r}
+vss(rho, fa="fa", fm="minres", cor="poly", n.obs = 2188)
+```
+
+Try MIRT model.
+```{r}
+m1 <- mirt(full, 1, "2PL")
+saveRDS(m1, "combined_irt_output/m1.rds")
+m1 <-  readRDS("combined_irt_output/m1.rds")
+```
+
+
+```{r}
+fscores <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+```
+
+Exploratory Detect
+```{r}
+full2 <- data.frame(full)
+```
+
+
+Confirmatory DETECT
+```{r}
+dtct <- c(rep(1, 37), rep(2, 478))
+
+conf <- conf.detect(full2, fscores, dtct)
+```
+
+Does not seem like the 2-dimensional structure implied by the distinction between lexical items and grammatical items is justified. 
+
+Exploratory detect to look for any other form of multidimensionality. 
+```{r}
+d1 <- expl.detect(full2, fscores, nclusters=2)
+```
+
+```{r}
+d1
+```
+
+
+```{r}
+m2 <- mirt(full, 2, "2PL")
+saveRDS(m2, "combined_irt_output/m2.rds")
+m2 <-  readRDS("combined_irt_output/m2.rds")
+```
+
+```{r}
+options(max.print=2000)
+summary(m2, rotate="oblimin", suppress=.2)
+```
+
+The first factor seems quite dominant. 
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 37
+                      F2 = 38 - 515
+                      COV=F1*F2')
+
+m3 <- mirt(full, model.1, "2PL", verbose=FALSE)
+
+summary(m3, "oblimin", suppress=.2)
+saveRDS(m3, "combined_irt_output/m3.rds")
+m3 <-  readRDS("combined_irt_output/m3.rds")
+```
+
+```{r}
+anova(m2, m3)
+anova(m1, m3)
+```
+
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 37, 315-515
+                      F2 = 38 - 314
+                      COV=F1*F2')
+
+m4 <- mirt(full, model.1, "2PL", verbose=FALSE)
+
+summary(m4, "oblimin", suppress=.2)
+saveRDS(m4, "combined_irt_output/m4.rds")
+m4 <-  readRDS("combined_irt_output/m4.rds")
+```
+

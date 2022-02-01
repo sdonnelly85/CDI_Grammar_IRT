@@ -13,7 +13,6 @@ output:
 
 Note to self: these models take a long time to run, so, rather than estimating them each time I run the code, I've saved the models, commented out teh code for running the models, and included the code for opening the models. Be **EXTRA CAREFUL** that the saved models are the most up to date. 
 
-
 # Preliminaries
 ```{r  message=FALSE, warning=FALSE}
 library(wordbankr) # WB data
@@ -76,12 +75,13 @@ Vocab %>%
   group_by(source_name) %>%
   count()
 ```
+
 ```{r}
 Vocab %>%
  filter(is.na(out)) %>%
  filter(source_name=="Marchman (Outreach1)")
 ```
-No idea why this word is missing. I'm removing all these participants from the IRT models. 
+No idea why this word is missing. I'm removing all these participants from the IRT models. This participant had a score on vocab, so it will lead to 1 more missing value in the final models. 
 
 ```{r}
 N_missing <- Vocab %>%
@@ -168,7 +168,6 @@ Looking at item misfit statistics
 itf <- readRDS("vocab_output/itf.rds")
 ```
 
-
 ```{r}
 misfit <- itf  %>% # Get labels of mis-fitting items. 
   filter(p.S_X2 <= .01) %>%
@@ -212,6 +211,12 @@ plot(itemGAM(items_bad$go,Theta)) %>% update(main = "go")
 plot(itemGAM(items_bad$read,Theta)) %>% update(main = "read")
 ```
 
+
+```{r}
+#M2(m1)
+```
+
+
 ```{r}
 true_raw <- Vocab_short %>%
   mutate(
@@ -234,7 +239,8 @@ true_score <- Vocab_short %>%
 
 library(patchwork)
 
-true_raw/(true_score + raw_score) 
+p1 <- true_raw/(true_score + raw_score) + theme_minimal() 
+ggsave("plots/PredictedVocab.png", last_plot(), height=3, width=4, dpi=300, unit="in")
 ```
 
 
@@ -249,13 +255,15 @@ coefs_2pl <- coef(m1, as.data.frame = TRUE) %>%
   filter(parameter == "a1" | parameter == "d" ) %>%
   pivot_wider(id_cols=item, names_from=parameter, values_from=value) 
 
-ggplot(coefs_2pl,  
+p2 <- ggplot(coefs_2pl,  
        aes(x = a1, y = -d)) + # Note in the book they use -d here, I think MIRT outputs a1 and an easiness rather than a difficulty. 
   geom_point(alpha = .3) + 
   ggrepel::geom_text_repel(data = coefs_2pl, 
                   aes(label = item), size = 3) + 
   xlab("Discrimination") + 
   ylab("Difficulty") + theme_minimal()
+
+ggsave("plots/DiscDimVocab.png", last_plot(), height=3, width=4, dpi=300, unit="in")
 ```
 
 

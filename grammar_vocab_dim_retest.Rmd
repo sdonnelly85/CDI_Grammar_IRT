@@ -1,0 +1,333 @@
+---
+title: Dimensionality of Vocabulary and Grammar
+author: Seamus Donnelly
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+This script examines whether vocabulary and grammar can be distinguished as separate dimensions. I've considered only cases from non-longitudinal data to avoid difficulties with dependent observations. 
+
+Open the libraries
+```{r message=FALSE, warning=FALSE}
+options(max.print=500)
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(sirt) # additional IRT functions
+```
+
+
+Download data sets.
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS", original_ids=TRUE) # original IDs for getting additional instances
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+
+There are still multiple observations from some participants. It seems that `longitudinal==FALSE` removes observations from studies that were entirely longitudinal, but there appear to be some repeat observations in the cross-sectional data. I want to get a sense of how many observations there are within participant even when `longitudinal==FALSE`.
+
+
+```{r}
+Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(source_name) %>%
+  count()
+```
+Number of observations per source_name + original_id
+```{r}
+Quick_Test_Admin <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(source_name, original_id) %>%
+    mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), # Total number of trials per participant
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0 
+  )) %>%
+  ungroup()
+
+ggplot(Quick_Test_Admin, aes(x=total_N)) + geom_histogram()
+
+Quick_Test_Admin %>%
+  group_by(total_N) %>%
+  count()
+```
+
+```{r}
+Quick_Test_Admin <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  arrange(age) %>%
+  mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), # Total number of trials per participant
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0 
+  )) %>%
+  ungroup()
+
+ggplot(Quick_Test_Admin, aes(x=total_N)) + geom_histogram()
+
+Quick_Test_Admin %>%
+  group_by(total_N) %>%
+  count()
+```
+
+
+```{r}
+Quick_Test_Admin %>%
+  filter(max_trial ==1) %>%
+  summarise(
+    Mean= mean(age),
+    Min= min(age),
+    max = max(age)
+  )
+```
+
+```{r}
+Quick_Test_Admin %>%
+  filter(max_trial ==1) %>%
+  filter( age < 19) %>%
+  count()
+
+Quick_Test_Admin %>%
+  filter(total_N > 1) %>%
+  filter(max_trial ==1) %>%
+  ggplot(aes)
+```
+
+```{r}
+Quick_Test_Admin %>%
+  filter(trial_num ==1) %>%
+  summarise(
+    Mean= mean(age),
+    Min= min(age),
+    max = max(age)
+  )
+
+Quick_Test_Admin %>%
+  filter(trial_num==1) %>%
+  filter( age < 19) %>%
+  count()
+```
+
+
+```{r}
+Admin2 <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+   mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), 
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0)
+    ) %>%
+  ungroup(original_id) %>%
+  filter(max_trial==1)
+```
+
+```{r}
+Admin3 <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  slice(1)
+```
+
+```{r}
+Complex <- Admin2 %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+#nrow(Complex) == (N_total - N_long)*N_complexity_items #Not yet updated
+```
+
+```{r}
+Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
+```
+
+
+```{r}
+Complex_short_with_ids <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax"))) %>%
+  drop_na()
+
+
+Complex_short_grammatical <- Complex_short_with_ids %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(starts_with(c("morphology", "syntax"))) # need to get rid of participant names for IRT models. 
+
+N_nog <- nrow(filter(Complex_short_with_ids, combine760 == 0))
+
+```
+
+Make vocab dataset. 
+```{r}
+Vocab <- Admin2 %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(longitudinal==FALSE) %>% # remove longitudinal data set
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    ) 
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+#nrow(Vocab) == (N_total - N_long)*N_vocab #Not yet updated
+```
+
+```{r}
+Vocab_short_with_ids <- Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") %>%
+  drop_na() # drop participants with missing data
+
+
+Vocab_short <- Vocab_short_with_ids %>%
+  dplyr::select(-"data_id") # dataset for IRT can't have IDs
+
+#nrow(Vocab_short_with_ids) == N_total - N_long - N_missing #Not yet updated
+```
+
+
+Combine
+```{r}
+full <- full_join(
+  Complex_short_with_ids, Vocab_short_with_ids, by="data_id"
+) %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(-c("data_id", "combine760")) %>%
+  drop_na()
+
+1875/2187
+```
+
+
+# Some quick checks of dimensionality. 
+
+```{r}
+full_tetra <- tetrachoric(full)
+
+rho <- full_tetra$rho
+```
+
+```{r}
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 1875)
+```
+
+```{r}
+vss(rho, fa="fa", fm="minres", cor="poly", n.obs = 1875)
+```
+
+Try MIRT model.
+```{r}
+m1 <- mirt(full, 1, "2PL")
+saveRDS(m1, "combined_irt_output/re_test/m1.rds")
+m1 <-  readRDS("combined_irt_output/re_test/m1.rds")
+```
+
+
+```{r}
+fscores <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+```
+
+Exploratory Detect
+```{r}
+full2 <- data.frame(full)
+```
+
+
+Confirmatory DETECT
+```{r}
+dtct <- c(rep(1, 37), rep(2, 478))
+
+conf <- conf.detect(full2, fscores, dtct)
+```
+
+Does not seem like the 2-dimensional structure implied by the distinction between lexical items and grammatical items is justified. 
+
+Exploratory detect to look for any other form of multidimensionality. 
+```{r}
+d1 <- expl.detect(full2, fscores, nclusters=2)
+```
+
+```{r}
+options(max.print=2000)
+d1
+```
+
+
+```{r}
+m2 <- mirt(full, 2, "2PL")
+saveRDS(m2, "combined_irt_output/re_test/m2.rds")
+m2 <-  readRDS("combined_irt_output/re_test/m2.rds")
+```
+
+```{r}
+options(max.print=2000)
+summary(m2, rotate="oblimin", suppress=.2)
+```
+
+The first factor seems quite dominant. 
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 37
+                      F2 = 38 - 515
+                      COV=F1*F2')
+
+m3 <- mirt(full, model.1, "2PL", verbose=FALSE)
+
+summary(m3, "oblimin", suppress=.2)
+saveRDS(m3, "combined_irt_output/re_test/m3.rds")
+m3 <-  readRDS("combined_irt_output/re_test/m3.rds")
+```
+
+```{r}
+anova(m2, m3)
+anova(m1, m3)
+```
+
+
+```{r}
+model.1 <- mirt.model('
+                      F1 = 1 - 37, 315-515
+                      F2 = 38 - 314
+                      COV=F1*F2')
+
+m4 <- mirt(full, model.1, "2PL", verbose=FALSE)
+
+summary(m4, "oblimin", suppress=.2)
+saveRDS(m4, "combined_irt_output/m4.rds")
+m4 <-  readRDS("combined_irt_output/m4.rds")
+```
+

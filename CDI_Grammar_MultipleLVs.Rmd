@@ -36,13 +36,14 @@ N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up lat
 Item <- get_item_data(language="English (American)", form = "WS")
 ```
 
+Download relevant data sets (Item = Descriptions of each Item on the Scale, Inst = item-level scores for each participant, Admin = Participant-Level data). Outcome variable needs to be re-coded from "complex" and "simple" to 1 and 0. Remove observations from longitudinal data sets. Save combine data because I'm going to remove participants who are not yet combining words. 
 ```{r}
 Complex <- Admin %>%
   full_join(.,Inst, by="data_id") %>%
   full_join(., Item, by="num_item_id") %>%
   filter(longitudinal==FALSE) %>%
-  filter(type == "combine" | 
-           type == "complexity" 
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
          ) %>%
   mutate(
     out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
@@ -79,7 +80,7 @@ N_na = 1426
 ```
 
 
-Create a variable that describes the 
+Create a variable that describes each item. 
 ```{r}
 Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
 ```
@@ -103,7 +104,7 @@ Complex %>%
   
 ```
 
-
+Plot these. 
 ```{r}
 Complex %>%
   filter(!is.na(out)) %>%
@@ -138,7 +139,6 @@ N_nog <- nrow(filter(Complex_short_with_ids, combine760 == 0))
 
 nrow(Complex_short_grammatical) == N_total - N_long - N_na -N_nog 
 ```
-
 
 ## Dimensionality Assessment
 Prior to fitting the IRT model, it's worth looking at the correlation structure of the data to get a sense of the possible dimensionality. 
@@ -182,7 +182,8 @@ summary(m1)
 ```
 
 ```{r}
-M2(m1)
+M2(m1) #%>%
+  #kable()
 ```
 
 ```{r}
@@ -231,13 +232,15 @@ coefs_2pl <- coef(m1, as.data.frame = TRUE) %>%
    category =  gsub('[[:digit:]]+', '', item)
   )
   
-ggplot(coefs_2pl,  
+p1 <- ggplot(coefs_2pl,  
        aes(x = a1, y = d)) + 
   geom_point(alpha = .3) + 
   ggrepel::geom_text_repel(data = coefs_2pl, 
                   aes(label = item), size = 3) + 
   xlab("Discrimination") + 
   ylab("Difficulty") + theme_minimal()
+
+ggsave("plots/DiscDiffGauss.png", last_plot(), dpi=300, height =3, width = 4, unit="in")
 ```
 
 ```{r}
@@ -267,9 +270,27 @@ true_score <- Complex_short_grammatical %>%
 
 library(patchwork)
 
-true_raw/(true_score + raw_score) 
+p2 <- true_raw/(true_score + raw_score) 
+ggsave("plots/PredictedRawGauss.png", last_plot(), dpi=300, height =3, width = 4, unit="in")
 ```
 There are still some 0s but this is considerably fewer than the dataset with all participants included. 
+
+```{r}
+Theta <- tibble(Theta = fscores(m1))
+Theta2 <- matrix(seq(-4,4,.01))
+m1_inf <- testinfo(m1, Theta2)
+m1_inf <- tibble(
+  Theta=Theta2, 
+  Info = m1_inf
+)
+
+hist(Theta, data=Theta)
+par(new=TRUE)
+plot(x=m1_inf$Theta, y=m1_inf$Info, type="l", pch = 15, lwd=2, col = 2, axes = FALSE, xlab = "", ylab = "") 
+axis(side = 4, at = pretty(range(m1_inf$Info))) 
+abline(h = 10)
+```
+
 
 ### Dimensionality
 Exploratory 2 dimensional IRT. 
@@ -441,9 +462,26 @@ ggplot(coefs_EH,
   xlab("Discrimination") + 
   ylab("Difficulty") + theme_minimal()
 ```
+
 ```{r}
 ggplot(coefs_EH, aes(x=a1, fill=category)) + geom_histogram() + theme_minimal()
 ggplot(coefs_EH, aes(x=d, fill=category)) + geom_histogram() + theme_minimal()
+```
+
+```{r}
+Theta <- tibble(Theta = fscores(m1_EH))
+Theta2 <- matrix(seq(-4,4,.01))
+m1_EH_inf <- testinfo(m1_EH, Theta2)
+m1_EH_inf <- tibble(
+  Theta=Theta2, 
+  Info = m1_EH_inf 
+)
+
+hist(Theta, data=Theta)
+par(new=TRUE)
+plot(x=m1_EH_inf$Theta, y=m1_EH_inf$Info, type="l", pch = 15, lwd=2, col = 3, axes = FALSE, xlab = "", ylab = "") 
+axis(side = 4, at = pretty(range(m1_EH_inf$Info)))
+abline(h = 10)
 ```
 
 ### Dimensionality
@@ -546,7 +584,7 @@ ggpairs(thetas[,38:41])
 ```
 
 ```{r}
-Complex_short_grammatical %>%
+p3 <- Complex_short_grammatical %>%
   mutate(
     Theta_logit = fscores(m1, use_dentype_estimate=TRUE)[,1], 
     Theta_EH = fscores(m1_EH, use_dentype_estimate=TRUE)[,1],
@@ -554,7 +592,9 @@ Complex_short_grammatical %>%
   ) %>%
   dplyr::select("Theta_logit", "Theta_EH","Theta_EHW") %>%
   pivot_longer(everything(), names_to="model", values_to="theta") %>%
-  ggplot(aes(x=theta, fill=model)) + geom_histogram(alpha = 0.5)
+  ggplot(aes(x=theta, fill=model)) + geom_histogram(alpha = 0.5) + theme_minimal()
+
+ggsave("plots/LVDist.png", last_plot(), heigh=3, width=4, dpi=300, unit="in")
 ```
 
 
@@ -578,8 +618,9 @@ Theta <- matrix(seq(-4,4,.01))
 m1_inf <- testinfo(m1, Theta)
 m1_EH_inf <- testinfo(m1_EH, Theta)
 m1_EHW_inf <- testinfo(m1_EHW, Theta)
+```
 
-
+```{r}
 info_plot <- tibble(Theta, m1_inf, m1_EH_inf, m1_EHW_inf) %>%
   pivot_longer(c("m1_inf", "m1_EH_inf", "m1_EHW_inf"), names_to = "LV", values_to = "Info") %>%
   mutate(
@@ -595,6 +636,10 @@ info_plot <- tibble(Theta, m1_inf, m1_EH_inf, m1_EHW_inf) %>%
 
 ```{r}
 hist_plot + info_plot  + plot_layout(guides = "collect")
+```
+
+```{r}
+m
 ```
 ### Procrustes Transformation
 ```{r}
