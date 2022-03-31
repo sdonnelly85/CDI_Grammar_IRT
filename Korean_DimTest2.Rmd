@@ -1,0 +1,319 @@
+---
+title: "Dimensionality Assessment of CDI Data Korean"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+In this analysis I've coded grammar as {0, 1} vs 2. In another (here) I've coded grammar as 0 vs {1, 2}.
+```{r, message=FALSE,warning=FALSE}
+library(readr)
+library(knitr)
+library(tidyverse)
+library(ggplot2)
+library(psych)
+library(sirt)
+library(Gifi)
+```
+
+# Data Prep
+```{r}
+Inst <- read_rds("Wordbank_Data/Inst_WS_Korean.rds") # needs to be saved as rds - csv conflates "" and NA 
+Admin <- read_rds("Wordbank_Data/Admin_WS_Korean.rds")
+N_total = nrow(Admin) 
+N_long = nrow(filter(Admin, longitudinal==TRUE))
+Item <- read_rds("Wordbank_Data/Item_WS_Korean.rds")
+```
+
+Data from Pae dataset doesn't have syntactic complexity data (checked this with Wordbank email). In the dataset from Pae NA for syntactic complexity means "missing" whereas it basically means "not yet" in the non-Pae data set. 
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="complexity")
+```
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="complexity") %>%
+  group_by(value) %>%
+  count()
+```
+
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="combine") %>%
+  group_by(value) %>%
+  count()
+``` 
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="combine" & is.na(value)) 
+```
+Participant 166972 has NA value for combine variable. 
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(data_id == "166972" & type=="complexity") 
+```
+
+
+
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="word") %>%
+  group_by(value) %>%
+  count()
+```
+4 missing _vocabulary_ items for this participant. See pre-registration Item #6. 
+```{r}
+Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae" & type=="word" & is.na(value)) 
+```
+
+```{r}
+part_include = filter(
+  Admin, data_id != "166883" & data_id != "166972"
+) %>%
+  select(data_id)
+
+N_Dropped  = 2
+
+N_na <- nrow(Admin %>%
+  filter(source_name =="Pae"))
+```
+
+## Make Complexity Data
+```{r}
+Complex <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  full_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae"  & data_id %in% part_include$data_id & (type == "combine" | # to drop non-combiners
+           type == "complexity") # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = as.numeric(ifelse(is.na(value), yes=0, no=
+                   ifelse(value=="not yet", yes=0, 
+                          ifelse(value==1, yes = 0, no =1)))))
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+nrow(Complex) == (N_total - N_Dropped - N_na)*N_complexity_items
+```
+```{r}
+Complex %>%
+  filter(type=="complexity") %>%
+  group_by(out) %>%
+  count()
+
+
+Complex %>%
+  filter(type=="complexity") %>%
+  group_by(value) %>%
+  count()
+
+Complex %>%
+  filter(type=="combine") %>%
+  group_by(out) %>%
+  count()
+```
+
+
+```{r}
+Complex_short_with_ids_all <- Complex %>% 
+  dplyr::select(data_id, type, value, out, num_item_id) %>%
+  mutate(
+    label = str_c(type, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "complexity"))) 
+
+Complex_short_with_ids <- Complex_short_with_ids_all %>%  
+drop_na()
+
+N_NA <- nrow(Complex_short_with_ids_all) - nrow(Complex_short_with_ids)
+
+Complex_short_grammatical <- Complex_short_with_ids %>%
+  filter(combine642 > 0) %>%
+  dplyr::select(starts_with(c("complexity"))) # need to get rid of participant names for IRT models. 
+
+N_nog <- nrow(filter(Complex_short_with_ids, combine642 == 0))
+
+nrow(Complex_short_grammatical) == N_total - N_Dropped - N_na - N_nog
+```
+
+### Some quick visualizations of grammar on its own
+```{r}
+Complex_tetra <- tetrachoric(Complex_short_grammatical)
+
+rhog <- Complex_tetra$rho
+write_rds(rhog, "PreReg_Analyses/Kor_output2/rhog.rds") #Commented out because model results are saved
+```
+
+```{r}
+rhog <- readRDS("PreReg_Analyses/Kor_output2/rhog.rds")
+```
+
+```{r}
+corPlot(rhog)
+```
+
+```{r}
+fa.parallel(rhog, fa="fa", cor="poly", n.obs = 231)
+```
+
+```{r}
+plot(princals(rhog))
+```
+
+
+```{r}
+Complex_short_grammatical2 <- data.frame(Complex_short_grammatical)
+m0a <- expl.detect(Complex_short_grammatical2, nclusters=2, use_sum_score=TRUE, seed=1)
+m0b <- expl.detect(Complex_short_grammatical2, nclusters=2, use_sum_score=TRUE, seed=347)
+m0c <- expl.detect(Complex_short_grammatical2, nclusters=2, use_sum_score=TRUE, seed=4861)
+m0d <- expl.detect(Complex_short_grammatical2, nclusters=2, use_sum_score=TRUE, seed=6789)
+
+
+write_rds(m0a, "PreReg_Analyses/Kor_output2/m0a.rds")
+write_rds(m0b, "PreReg_Analyses/Kor_output2/m0b.rds")
+write_rds(m0c, "PreReg_Analyses/Kor_output2/m0c.rds")
+write_rds(m0d, "PreReg_Analyses/Kor_output2/m0d.rds")
+
+m0a<- read_rds("PreReg_Analyses/Kor_output2/m0a.rds")
+m0b<- read_rds("PreReg_Analyses/Kor_output2/m0b.rds")
+m0c<- read_rds("PreReg_Analyses/Kor_output2/m0c.rds")
+m0d<- read_rds("PreReg_Analyses/Kor_output2/m0d.rds")
+
+m0a$detect.unweighted
+m0b$detect.unweighted
+m0c$detect.unweighted
+m0d$detect.unweighted
+```
+This is jumping around quite a bit. 
+
+
+## Make Vocab Data
+
+```{r}
+Admin %>% # Start with new administration dataset.
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae"  & data_id %in% part_include$data_id & type == "word")  %>%
+  group_by(value) %>%
+  count()
+```
+
+```{r}
+Vocab <- Admin %>% # Start with new administration dataset.
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(source_name != "Pae"  & data_id %in% part_include$data_id & type == "word")  %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    ) 
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+nrow(Vocab) == (N_total - N_Dropped - N_na)*N_vocab 
+```
+
+```{r}
+Vocab_short_with_ids_all <- Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, item_id) %>%
+  pivot_wider(id_cols=data_id, names_from = "item_id", values_from="out") 
+
+Vocab_short_with_ids <- Vocab_short_with_ids_all %>% 
+  drop_na()
+
+
+N_NA_vocab <- nrow(Vocab_short_with_ids_all) - nrow(Vocab_short_with_ids)
+
+Vocab_short <- Vocab_short_with_ids %>%
+  dplyr::select(-"data_id") # dataset for IRT can't have IDs
+
+nrow(Vocab_short_with_ids) == N_total - N_Dropped - N_na  # total vocab = original - longitudinal - NAs
+```
+
+
+## Make Full Data
+```{r}
+full <- full_join(
+  Complex_short_with_ids, Vocab_short_with_ids, by="data_id"
+) %>%
+  filter(combine642 > 0) %>%
+  dplyr::select(-c("data_id", "combine642")) %>%
+  drop_na()
+```
+
+Didn't bother with FAs because ratio of participants to items was so small. 
+
+
+```{r}
+dtct <- c(rep(1, 32), rep(33, 494))
+
+full2 <- data.frame(full)
+fscores = rowSums(full)
+
+conf <- conf.detect(full2, fscores,  dtct)
+write_rds(conf, "PreReg_Analyses/Kor_output2/conf1.rds")
+
+conf <- read_rds("PreReg_Analyses/Kor_output2/conf1.rds")
+```
+
+Select use_sum_score = TRUE
+```{r}
+conf2 <- conf.detect(full2, fscores,  dtct, use_sum_score=TRUE)
+
+write_rds(conf2, "PreReg_Analyses/Kor_output2/conf2.rds")
+
+conf2 <- read_rds("PreReg_Analyses/Kor_output2/conf2.rds")
+```
+
+This does not work. 
+
+
+```{r}
+summary(conf)
+#summary(conf2)
+```
+
+Exploratory Detect. I have found that results of these analyses vary a bit with the seed, so I'm varying the seed here and seeing what happens. 
+```{r}
+m1 <- expl.detect(full2, fscores, nclusters=2, use_sum_score=TRUE, seed=1)
+#m2 <- expl.detect(full2, fscores, nclusters=2, use_sum_score=TRUE, seed=347)
+#m3 <- expl.detect(full2, fscores, nclusters=2, use_sum_score=TRUE, seed=4861)
+#m4 <- expl.detect(full2, fscores, nclusters=2, use_sum_score=TRUE, seed=6789)
+ 
+
+#write_rds(m1, "PreReg_Analyses/Kor_output2/m1.rds")
+#write_rds(m2, "PreReg_Analyses/Kor_output2/m2.rds")
+#write_rds(m3, "PreReg_Analyses/Kor_output2/m3.rds")
+#write_rds(m4, "PreReg_Analyses/Kor_output/m4.rds")
+
+m1<- read_rds("PreReg_Analyses/Kor_output2/m1.rds")
+m2<- read_rds("PreReg_Analyses/Kor_output2/m2.rds")
+m3<- read_rds("PreReg_Analyses/Kor_output2/m3.rds")
+m4<- read_rds("PreReg_Analyses/Kor_output2/m4.rds")
+```
+
+```{r}
+m1$detect.unweighted
+m2$detect.unweighted
+m3$detect.unweighted
+m4$detect.unweighted
+```
+

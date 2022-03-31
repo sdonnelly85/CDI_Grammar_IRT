@@ -1,0 +1,493 @@
+item_id,definition,language,form,type,category,lexical_category,lexical_class,uni_lemma,complexity_category,num_item_id
+item_1,respname,English (American),WG,first_signs,NA,NA,NA,NA,,1
+item_2,respno,English (American),WG,first_signs,NA,NA,NA,NA,,2
+item_3,reactmd,English (American),WG,first_signs,NA,NA,NA,NA,,3
+item_4,arehngry,English (American),WG,phrases,NA,NA,NA,NA,,4
+item_5,aretired,English (American),WG,phrases,NA,NA,NA,NA,,5
+item_6,becarefl,English (American),WG,phrases,NA,NA,NA,NA,,6
+item_7,bequiet,English (American),WG,phrases,NA,NA,NA,NA,,7
+item_8,claphand,English (American),WG,phrases,NA,NA,NA,NA,,8
+item_9,cgdiaper,English (American),WG,phrases,NA,NA,NA,NA,,9
+item_10,comehere,English (American),WG,phrases,NA,NA,NA,NA,,10
+item_11,mdhome,English (American),WG,phrases,NA,NA,NA,NA,,11
+item_12,wantmore,English (American),WG,phrases,NA,NA,NA,NA,,12
+item_13,dontdo,English (American),WG,phrases,NA,NA,NA,NA,,13
+item_14,dontouch,English (American),WG,phrases,NA,NA,NA,NA,,14
+item_15,getup,English (American),WG,phrases,NA,NA,NA,NA,,15
+item_16,givemom,English (American),WG,phrases,NA,NA,NA,NA,,16
+item_17,givehug,English (American),WG,phrases,NA,NA,NA,NA,,17
+item_18,givekiss,English (American),WG,phrases,NA,NA,NA,NA,,18
+item_19,goget,English (American),WG,phrases,NA,NA,NA,NA,,19
+item_20,goodgb,English (American),WG,phrases,NA,NA,NA,NA,,20
+item_21,holdstil,English (American),WG,phrases,NA,NA,NA,NA,,21
+item_22,gobyebye,English (American),WG,phrases,NA,NA,NA,NA,,22
+item_23,lookhere,English (American),WG,phrases,NA,NA,NA,NA,,23
+item_24,openmth,English (American),WG,phrases,NA,NA,NA,NA,,24
+item_25,sitdown,English (American),WG,phrases,NA,NA,NA,NA,,25
+item_26,spitout,English (American),WG,phrases,NA,NA,NA,NA,,26
+item_27,stopit,English (American),WG,phrases,NA,NA,NA,NA,,27
+item_28,gonight,English (American),WG,phrases,NA,NA,NA,NA,,28
+item_29,throwbll,English (American),WG,phrases,NA,NA,NA,NA,,29
+item_30,litpiggy,English (American),WG,phrases,NA,NA,NA,NA,,30
+item_31,wantride,English (American),WG,phrases,NA,NA,NA,NA,,31
+item_32,imitate,English (American),WG,starting_to_talk,NA,NA,NA,NA,,32
+item_33,label,English (American),WG,starting_to_talk,NA,NA,NA,NA,,33
+item_34,baa baa,English (American),WG,word,sounds,other,other,baa baa,,34
+item_35,choo choo,English (American),WG,word,sounds,other,other,choo choo,,35
+item_36,cockadoodledoo,English (American),WG,word,sounds,other,other,cockadoodledoo,,36
+item_37,grrr,English (American),WG,word,sounds,other,other,grrr,,37
+item_38,meow,English (American),WG,word,sounds,other,other,meow,,38
+item_39,moo,English (American),WG,word,sounds,other,other,moo,,39
+item_40,ouch,English (American),WG,word,sounds,other,other,ouch,,40
+item_41,quack quack,English (American),WG,word,sounds,other,other,quack quack,,41
+item_42,uh oh,English (American),WG,word,sounds,other,other,uh oh,,42
+item_43,vroom,English (American),WG,word,sounds,other,other,vroom,,43
+item_44,woof woof,English (American),WG,word,sounds,other,other,woof woof,,44
+item_45,yum yum,English (American),WG,word,sounds,other,other,yum yum,,45
+item_46,animal,English (American),WG,word,animals,nouns,nouns,animal,,46
+item_47,bear,English (American),WG,word,animals,nouns,nouns,bear,,47
+item_48,bee,English (American),WG,word,animals,nouns,nouns,bee,,48
+item_49,bird,English (American),WG,word,animals,nouns,nouns,bird,,49
+item_50,bug,English (American),WG,word,animals,nouns,nouns,bug,,50
+item_51,bunny,English (American),WG,word,animals,nouns,nouns,bunny,,51
+item_52,butterfly,English (American),WG,word,animals,nouns,nouns,butterfly,,52
+item_53,cat,English (American),WG,word,animals,nouns,nouns,cat,,53
+item_54,chicken (animal),English (American),WG,word,animals,nouns,nouns,chicken (animal),,54
+item_55,cow,English (American),WG,word,animals,nouns,nouns,cow,,55
+item_56,deer,English (American),WG,word,animals,nouns,nouns,deer,,56
+item_57,dog,English (American),WG,word,animals,nouns,nouns,dog,,57
+item_58,donkey,English (American),WG,word,animals,nouns,nouns,donkey,,58
+item_59,duck,English (American),WG,word,animals,nouns,nouns,duck,,59
+item_60,elephant,English (American),WG,word,animals,nouns,nouns,elephant,,60
+item_61,fish (animal),English (American),WG,word,animals,nouns,nouns,fish (animal),,61
+item_62,frog,English (American),WG,word,animals,nouns,nouns,frog,,62
+item_63,giraffe,English (American),WG,word,animals,nouns,nouns,giraffe,,63
+item_64,goose,English (American),WG,word,animals,nouns,nouns,goose,,64
+item_65,horse,English (American),WG,word,animals,nouns,nouns,horse,,65
+item_66,kitty,English (American),WG,word,animals,nouns,nouns,kitty,,66
+item_67,lamb,English (American),WG,word,animals,nouns,nouns,lamb,,67
+item_68,lion,English (American),WG,word,animals,nouns,nouns,lion,,68
+item_69,monkey,English (American),WG,word,animals,nouns,nouns,monkey,,69
+item_70,mouse,English (American),WG,word,animals,nouns,nouns,mouse,,70
+item_71,owl,English (American),WG,word,animals,nouns,nouns,owl,,71
+item_72,penguin,English (American),WG,word,animals,nouns,nouns,penguin,,72
+item_73,pig,English (American),WG,word,animals,nouns,nouns,pig,,73
+item_74,pony,English (American),WG,word,animals,nouns,nouns,pony,,74
+item_75,puppy,English (American),WG,word,animals,nouns,nouns,puppy,,75
+item_76,sheep,English (American),WG,word,animals,nouns,nouns,sheep,,76
+item_77,squirrel,English (American),WG,word,animals,nouns,nouns,squirrel,,77
+item_78,teddybear,English (American),WG,word,animals,nouns,nouns,teddybear,,78
+item_79,tiger,English (American),WG,word,animals,nouns,nouns,tiger,,79
+item_80,turkey,English (American),WG,word,animals,nouns,nouns,turkey,,80
+item_81,turtle,English (American),WG,word,animals,nouns,nouns,turtle,,81
+item_82,airplane,English (American),WG,word,vehicles,nouns,nouns,airplane,,82
+item_83,bicycle,English (American),WG,word,vehicles,nouns,nouns,bicycle,,83
+item_84,bus,English (American),WG,word,vehicles,nouns,nouns,bus,,84
+item_85,car,English (American),WG,word,vehicles,nouns,nouns,car,,85
+item_86,firetruck,English (American),WG,word,vehicles,nouns,nouns,firetruck,,86
+item_87,motorcycle,English (American),WG,word,vehicles,nouns,nouns,motorcycle,,87
+item_88,stroller,English (American),WG,word,vehicles,nouns,nouns,stroller,,88
+item_89,train,English (American),WG,word,vehicles,nouns,nouns,train,,89
+item_90,truck,English (American),WG,word,vehicles,nouns,nouns,truck,,90
+item_91,ball,English (American),WG,word,toys,nouns,nouns,ball,,91
+item_92,balloon,English (American),WG,word,toys,nouns,nouns,balloon,,92
+item_93,block,English (American),WG,word,toys,nouns,nouns,block,,93
+item_94,book,English (American),WG,word,toys,nouns,nouns,book,,94
+item_95,bubbles,English (American),WG,word,toys,nouns,nouns,bubbles,,95
+item_96,doll,English (American),WG,word,toys,nouns,nouns,doll,,96
+item_97,pen,English (American),WG,word,toys,nouns,nouns,pen,,97
+item_98,toy (object),English (American),WG,word,toys,nouns,nouns,toy (object),,98
+item_99,apple,English (American),WG,word,food_drink,nouns,nouns,apple,,99
+item_100,banana,English (American),WG,word,food_drink,nouns,nouns,banana,,100
+item_101,bread,English (American),WG,word,food_drink,nouns,nouns,bread,,101
+item_102,butter,English (American),WG,word,food_drink,nouns,nouns,butter,,102
+item_103,cake,English (American),WG,word,food_drink,nouns,nouns,cake,,103
+item_104,candy,English (American),WG,word,food_drink,nouns,nouns,candy,,104
+item_105,carrots,English (American),WG,word,food_drink,nouns,nouns,carrots,,105
+item_106,cereal,English (American),WG,word,food_drink,nouns,nouns,cereal,,106
+item_107,cheerios,English (American),WG,word,food_drink,nouns,nouns,cheerios,,107
+item_108,cheese,English (American),WG,word,food_drink,nouns,nouns,cheese,,108
+item_109,chicken (food),English (American),WG,word,food_drink,nouns,nouns,chicken (food),,109
+item_110,coffee,English (American),WG,word,food_drink,nouns,nouns,coffee,,110
+item_111,cookie,English (American),WG,word,food_drink,nouns,nouns,cookie,,111
+item_112,cracker,English (American),WG,word,food_drink,nouns,nouns,cracker,,112
+item_113,drink (beverage),English (American),WG,word,food_drink,nouns,nouns,drink (beverage),,113
+item_114,egg,English (American),WG,word,food_drink,nouns,nouns,egg,,114
+item_115,fish (food),English (American),WG,word,food_drink,nouns,nouns,fish (food),,115
+item_116,food,English (American),WG,word,food_drink,nouns,nouns,food,,116
+item_117,ice cream,English (American),WG,word,food_drink,nouns,nouns,ice cream,,117
+item_118,juice,English (American),WG,word,food_drink,nouns,nouns,juice,,118
+item_119,meat,English (American),WG,word,food_drink,nouns,nouns,meat,,119
+item_120,milk,English (American),WG,word,food_drink,nouns,nouns,milk,,120
+item_121,noodles,English (American),WG,word,food_drink,nouns,nouns,pasta,,121
+item_122,orange (food),English (American),WG,word,food_drink,nouns,nouns,orange (food),,122
+item_123,peas,English (American),WG,word,food_drink,nouns,nouns,peas,,123
+item_124,pizza,English (American),WG,word,food_drink,nouns,nouns,pizza,,124
+item_125,raisin,English (American),WG,word,food_drink,nouns,nouns,raisin,,125
+item_126,spaghetti,English (American),WG,word,food_drink,nouns,nouns,pasta,,126
+item_127,toast,English (American),WG,word,food_drink,nouns,nouns,toast,,127
+item_128,water (beverage),English (American),WG,word,food_drink,nouns,nouns,water (beverage),,128
+item_129,beads,English (American),WG,word,clothing,nouns,nouns,beads,,129
+item_130,bib,English (American),WG,word,clothing,nouns,nouns,bib,,130
+item_131,boots,English (American),WG,word,clothing,nouns,nouns,boots,,131
+item_132,button,English (American),WG,word,clothing,nouns,nouns,button,,132
+item_133,coat,English (American),WG,word,clothing,nouns,nouns,coat,,133
+item_134,diaper,English (American),WG,word,clothing,nouns,nouns,diaper,,134
+item_135,dress (object),English (American),WG,word,clothing,nouns,nouns,dress (object),,135
+item_136,hat,English (American),WG,word,clothing,nouns,nouns,hat,,136
+item_137,jacket,English (American),WG,word,clothing,nouns,nouns,jacket,,137
+item_138,jeans,English (American),WG,word,clothing,nouns,nouns,jeans,,138
+item_139,necklace,English (American),WG,word,clothing,nouns,nouns,necklace,,139
+item_140,pajamas,English (American),WG,word,clothing,nouns,nouns,pajamas,,140
+item_141,pants,English (American),WG,word,clothing,nouns,nouns,pants,,141
+item_142,shirt,English (American),WG,word,clothing,nouns,nouns,shirt,,142
+item_143,shoe,English (American),WG,word,clothing,nouns,nouns,shoe,,143
+item_144,shorts,English (American),WG,word,clothing,nouns,nouns,shorts,,144
+item_145,sock,English (American),WG,word,clothing,nouns,nouns,sock,,145
+item_146,sweater,English (American),WG,word,clothing,nouns,nouns,sweater,,146
+item_147,zipper,English (American),WG,word,clothing,nouns,nouns,zipper,,147
+item_148,arm,English (American),WG,word,body_parts,nouns,nouns,arm,,148
+item_149,belly button,English (American),WG,word,body_parts,nouns,nouns,belly button,,149
+item_150,cheek,English (American),WG,word,body_parts,nouns,nouns,cheek,,150
+item_151,ear,English (American),WG,word,body_parts,nouns,nouns,ear,,151
+item_152,eye,English (American),WG,word,body_parts,nouns,nouns,eye,,152
+item_153,face,English (American),WG,word,body_parts,nouns,nouns,face,,153
+item_154,foot,English (American),WG,word,body_parts,nouns,nouns,foot,,154
+item_155,finger,English (American),WG,word,body_parts,nouns,nouns,finger,,155
+item_156,hair,English (American),WG,word,body_parts,nouns,nouns,hair,,156
+item_157,hand,English (American),WG,word,body_parts,nouns,nouns,hand,,157
+item_158,head,English (American),WG,word,body_parts,nouns,nouns,head,,158
+item_159,knee,English (American),WG,word,body_parts,nouns,nouns,knee,,159
+item_160,leg,English (American),WG,word,body_parts,nouns,nouns,leg,,160
+item_161,mouth,English (American),WG,word,body_parts,nouns,nouns,mouth,,161
+item_162,nose,English (American),WG,word,body_parts,nouns,nouns,nose,,162
+item_163,owie/boo boo,English (American),WG,word,body_parts,nouns,nouns,owie,,163
+item_164,tooth,English (American),WG,word,body_parts,nouns,nouns,tooth,,164
+item_165,toe,English (American),WG,word,body_parts,nouns,nouns,toe,,165
+item_166,tongue,English (American),WG,word,body_parts,nouns,nouns,tongue,,166
+item_167,tummy,English (American),WG,word,body_parts,nouns,nouns,tummy,,167
+item_168,bathroom,English (American),WG,word,furniture_rooms,nouns,nouns,bathroom,,168
+item_169,bathtub,English (American),WG,word,furniture_rooms,nouns,nouns,bathtub,,169
+item_170,bed,English (American),WG,word,furniture_rooms,nouns,nouns,bed,,170
+item_171,bedroom,English (American),WG,word,furniture_rooms,nouns,nouns,bedroom,,171
+item_172,chair,English (American),WG,word,furniture_rooms,nouns,nouns,chair,,172
+item_173,couch,English (American),WG,word,furniture_rooms,nouns,nouns,couch,,173
+item_174,crib,English (American),WG,word,furniture_rooms,nouns,nouns,crib,,174
+item_175,door,English (American),WG,word,furniture_rooms,nouns,nouns,door,,175
+item_176,drawer,English (American),WG,word,furniture_rooms,nouns,nouns,drawer,,176
+item_177,garage,English (American),WG,word,furniture_rooms,nouns,nouns,garage,,177
+item_178,high chair,English (American),WG,word,furniture_rooms,nouns,nouns,high chair,,178
+item_179,kitchen,English (American),WG,word,furniture_rooms,nouns,nouns,kitchen,,179
+item_180,living room,English (American),WG,word,furniture_rooms,nouns,nouns,living room,,180
+item_181,oven,English (American),WG,word,furniture_rooms,nouns,nouns,oven,,181
+item_182,play pen,English (American),WG,word,furniture_rooms,nouns,nouns,play pen,,182
+item_183,potty,English (American),WG,word,furniture_rooms,nouns,nouns,potty,,183
+item_184,refrigerator,English (American),WG,word,furniture_rooms,nouns,nouns,refrigerator,,184
+item_185,rocking chair,English (American),WG,word,furniture_rooms,nouns,nouns,rocking chair,,185
+item_186,sink,English (American),WG,word,furniture_rooms,nouns,nouns,sink,,186
+item_187,stairs,English (American),WG,word,furniture_rooms,nouns,nouns,stairs,,187
+item_188,stove,English (American),WG,word,furniture_rooms,nouns,nouns,stove,,188
+item_189,table,English (American),WG,word,furniture_rooms,nouns,nouns,table,,189
+item_190,TV,English (American),WG,word,furniture_rooms,nouns,nouns,tv,,190
+item_191,window,English (American),WG,word,furniture_rooms,nouns,nouns,window,,191
+item_192,blanket,English (American),WG,word,household,nouns,nouns,blanket,,192
+item_193,bottle,English (American),WG,word,household,nouns,nouns,bottle,,193
+item_194,bowl,English (American),WG,word,household,nouns,nouns,bowl,,194
+item_195,box,English (American),WG,word,household,nouns,nouns,box,,195
+item_196,broom,English (American),WG,word,household,nouns,nouns,broom,,196
+item_197,brush,English (American),WG,word,household,nouns,nouns,brush (object),,197
+item_198,clock,English (American),WG,word,household,nouns,nouns,clock,,198
+item_199,comb,English (American),WG,word,household,nouns,nouns,comb (object),,199
+item_200,cup,English (American),WG,word,household,nouns,nouns,cup,,200
+item_201,dish,English (American),WG,word,household,nouns,nouns,dish,,201
+item_202,fork,English (American),WG,word,household,nouns,nouns,fork,,202
+item_203,glass,English (American),WG,word,household,nouns,nouns,glass,,203
+item_204,glasses,English (American),WG,word,household,nouns,nouns,glasses,,204
+item_205,hammer,English (American),WG,word,household,nouns,nouns,hammer,,205
+item_206,keys,English (American),WG,word,household,nouns,nouns,keys,,206
+item_207,lamp,English (American),WG,word,household,nouns,nouns,lamp,,207
+item_208,light,English (American),WG,word,household,nouns,nouns,light (object),,208
+item_209,medicine,English (American),WG,word,household,nouns,nouns,medicine,,209
+item_210,money,English (American),WG,word,household,nouns,nouns,money,,210
+item_211,paper,English (American),WG,word,household,nouns,nouns,paper,,211
+item_212,penny,English (American),WG,word,household,nouns,nouns,penny,,212
+item_213,picture,English (American),WG,word,household,nouns,nouns,picture,,213
+item_214,pillow,English (American),WG,word,household,nouns,nouns,pillow,,214
+item_215,plant,English (American),WG,word,household,nouns,nouns,plant,,215
+item_216,plate,English (American),WG,word,household,nouns,nouns,plate,,216
+item_217,purse,English (American),WG,word,household,nouns,nouns,purse,,217
+item_218,radio,English (American),WG,word,household,nouns,nouns,radio,,218
+item_219,scissors,English (American),WG,word,household,nouns,nouns,scissors,,219
+item_220,soap,English (American),WG,word,household,nouns,nouns,soap,,220
+item_221,spoon,English (American),WG,word,household,nouns,nouns,spoon,,221
+item_222,telephone,English (American),WG,word,household,nouns,nouns,telephone,,222
+item_223,toothbrush,English (American),WG,word,household,nouns,nouns,toothbrush,,223
+item_224,towel,English (American),WG,word,household,nouns,nouns,towel,,224
+item_225,trash,English (American),WG,word,household,nouns,nouns,trash,,225
+item_226,vacuum,English (American),WG,word,household,nouns,nouns,vacuum,,226
+item_227,watch (object),English (American),WG,word,household,nouns,nouns,watch (object),,227
+item_228,backyard,English (American),WG,word,outside,nouns,nouns,yard,,228
+item_229,beach,English (American),WG,word,outside,nouns,nouns,beach,,229
+item_230,church*,English (American),WG,word,outside,nouns,nouns,church,,230
+item_231,flower,English (American),WG,word,outside,nouns,nouns,flower,,231
+item_232,garden,English (American),WG,word,outside,nouns,nouns,garden,,232
+item_233,home,English (American),WG,word,outside,nouns,nouns,home,,233
+item_234,house,English (American),WG,word,outside,nouns,nouns,house,,234
+item_235,moon,English (American),WG,word,outside,nouns,nouns,moon,,235
+item_236,outside,English (American),WG,word,outside,nouns,nouns,outside,,236
+item_237,park,English (American),WG,word,outside,nouns,nouns,park,,237
+item_238,party,English (American),WG,word,outside,nouns,nouns,party,,238
+item_239,pool,English (American),WG,word,outside,nouns,nouns,pool,,239
+item_240,rain,English (American),WG,word,outside,nouns,nouns,rain,,240
+item_241,rock,English (American),WG,word,outside,nouns,nouns,rock (object),,241
+item_242,school,English (American),WG,word,outside,nouns,nouns,school,,242
+item_243,shovel,English (American),WG,word,outside,nouns,nouns,shovel,,243
+item_244,sky,English (American),WG,word,outside,nouns,nouns,sky,,244
+item_245,slide (object),English (American),WG,word,outside,nouns,nouns,slide (object),,245
+item_246,snow,English (American),WG,word,outside,nouns,nouns,snow,,246
+item_247,star,English (American),WG,word,outside,nouns,nouns,star,,247
+item_248,store,English (American),WG,word,outside,nouns,nouns,store,,248
+item_249,sun,English (American),WG,word,outside,nouns,nouns,sun,,249
+item_250,swing (object),English (American),WG,word,outside,nouns,nouns,swing (object),,250
+item_251,tree,English (American),WG,word,outside,nouns,nouns,tree,,251
+item_252,water (not beverage),English (American),WG,word,outside,nouns,nouns,water (not beverage),,252
+item_253,work (place),English (American),WG,word,outside,nouns,nouns,work (place),,253
+item_254,zoo,English (American),WG,word,outside,nouns,nouns,zoo,,254
+item_255,aunt,English (American),WG,word,people,other,other,aunt,,255
+item_256,baby,English (American),WG,word,people,other,other,baby,,256
+item_257,babysitter,English (American),WG,word,people,other,other,babysitter,,257
+item_258,babysitter's name,English (American),WG,word,people,other,other,babysitter's name,,258
+item_259,boy,English (American),WG,word,people,other,other,boy,,259
+item_260,brother,English (American),WG,word,people,other,other,brother,,260
+item_261,child,English (American),WG,word,people,other,other,child,,261
+item_262,daddy*,English (American),WG,word,people,other,other,daddy,,262
+item_263,girl,English (American),WG,word,people,other,other,girl,,263
+item_264,grandma*,English (American),WG,word,people,other,other,grandma,,264
+item_265,grandpa*,English (American),WG,word,people,other,other,grandpa,,265
+item_266,lady,English (American),WG,word,people,other,other,lady,,266
+item_267,man,English (American),WG,word,people,other,other,man,,267
+item_268,mommy*,English (American),WG,word,people,other,other,mommy,,268
+item_269,child's own name,English (American),WG,word,people,other,other,child's own name,,269
+item_270,people,English (American),WG,word,people,other,other,people,,270
+item_271,person,English (American),WG,word,people,other,other,person,,271
+item_272,sister,English (American),WG,word,people,other,other,sister,,272
+item_273,teacher,English (American),WG,word,people,other,other,teacher,,273
+item_274,uncle,English (American),WG,word,people,other,other,uncle,,274
+item_275,bath,English (American),WG,word,games_routines,other,other,bath,,275
+item_276,breakfast,English (American),WG,word,games_routines,other,other,breakfast,,276
+item_277,bye,English (American),WG,word,games_routines,other,other,bye,,277
+item_278,dinner,English (American),WG,word,games_routines,other,other,dinner,,278
+item_279,don't,English (American),WG,word,games_routines,other,other,don't,,279
+item_280,hello,English (American),WG,word,games_routines,other,other,hello,,280
+item_281,hi,English (American),WG,word,games_routines,other,other,hi,,281
+item_282,lunch,English (American),WG,word,games_routines,other,other,lunch,,282
+item_283,nap,English (American),WG,word,games_routines,other,other,nap,,283
+item_284,night night,English (American),WG,word,games_routines,other,other,good night,,284
+item_285,no,English (American),WG,word,games_routines,other,other,no,,285
+item_286,pattycake,English (American),WG,word,games_routines,other,other,pattycake,,286
+item_287,peekaboo,English (American),WG,word,games_routines,other,other,peekaboo,,287
+item_288,please,English (American),WG,word,games_routines,other,other,please,,288
+item_289,shh/shush/hush,English (American),WG,word,games_routines,other,other,shh,,289
+item_290,thank you,English (American),WG,word,games_routines,other,other,thank you,,290
+item_291,wait,English (American),WG,word,games_routines,other,other,wait,,291
+item_292,wanna/want to,English (American),WG,word,games_routines,other,other,wanna,,292
+item_293,yes,English (American),WG,word,games_routines,other,other,yes,,293
+item_294,bite,English (American),WG,word,action_words,predicates,verbs,bite,,294
+item_295,blow,English (American),WG,word,action_words,predicates,verbs,blow,,295
+item_296,break,English (American),WG,word,action_words,predicates,verbs,break,,296
+item_297,bring,English (American),WG,word,action_words,predicates,verbs,bring,,297
+item_298,bump,English (American),WG,word,action_words,predicates,verbs,bump,,298
+item_299,clean (action),English (American),WG,word,action_words,predicates,verbs,clean (action),,299
+item_300,close,English (American),WG,word,action_words,predicates,verbs,close,,300
+item_301,cry,English (American),WG,word,action_words,predicates,verbs,cry,,301
+item_302,dance,English (American),WG,word,action_words,predicates,verbs,dance,,302
+item_303,draw,English (American),WG,word,action_words,predicates,verbs,draw,,303
+item_304,drink (action),English (American),WG,word,action_words,predicates,verbs,drink (action),,304
+item_305,drive,English (American),WG,word,action_words,predicates,verbs,drive,,305
+item_306,eat,English (American),WG,word,action_words,predicates,verbs,eat,,306
+item_307,fall,English (American),WG,word,action_words,predicates,verbs,fall,,307
+item_308,feed,English (American),WG,word,action_words,predicates,verbs,feed,,308
+item_309,finish,English (American),WG,word,action_words,predicates,verbs,finish,,309
+item_310,get,English (American),WG,word,action_words,predicates,verbs,get,,310
+item_311,give,English (American),WG,word,action_words,predicates,verbs,give,,311
+item_312,go,English (American),WG,word,action_words,predicates,verbs,go,,312
+item_313,help,English (American),WG,word,action_words,predicates,verbs,help,,313
+item_314,hit,English (American),WG,word,action_words,predicates,verbs,hit,,314
+item_315,hug,English (American),WG,word,action_words,predicates,verbs,hug,,315
+item_316,hurry,English (American),WG,word,action_words,predicates,verbs,hurry,,316
+item_317,jump,English (American),WG,word,action_words,predicates,verbs,jump,,317
+item_318,kick,English (American),WG,word,action_words,predicates,verbs,kick,,318
+item_319,kiss,English (American),WG,word,action_words,predicates,verbs,kiss,,319
+item_320,look,English (American),WG,word,action_words,predicates,verbs,look,,320
+item_321,love,English (American),WG,word,action_words,predicates,verbs,love,,321
+item_322,open,English (American),WG,word,action_words,predicates,verbs,open (action),,322
+item_323,play,English (American),WG,word,action_words,predicates,verbs,play,,323
+item_324,pull,English (American),WG,word,action_words,predicates,verbs,pull,,324
+item_325,push,English (American),WG,word,action_words,predicates,verbs,push,,325
+item_326,put,English (American),WG,word,action_words,predicates,verbs,put,,326
+item_327,read,English (American),WG,word,action_words,predicates,verbs,read,,327
+item_328,ride,English (American),WG,word,action_words,predicates,verbs,ride,,328
+item_329,run,English (American),WG,word,action_words,predicates,verbs,run,,329
+item_330,say,English (American),WG,word,action_words,predicates,verbs,say,,330
+item_331,see,English (American),WG,word,action_words,predicates,verbs,see,,331
+item_332,show,English (American),WG,word,action_words,predicates,verbs,show,,332
+item_333,sing,English (American),WG,word,action_words,predicates,verbs,sing,,333
+item_334,sleep,English (American),WG,word,action_words,predicates,verbs,sleep,,334
+item_335,smile,English (American),WG,word,action_words,predicates,verbs,smile,,335
+item_336,splash,English (American),WG,word,action_words,predicates,verbs,splash,,336
+item_337,stop,English (American),WG,word,action_words,predicates,verbs,stop,,337
+item_338,swim,English (American),WG,word,action_words,predicates,verbs,swim,,338
+item_339,swing (action),English (American),WG,word,action_words,predicates,verbs,swing (action),,339
+item_340,take,English (American),WG,word,action_words,predicates,verbs,take,,340
+item_341,throw,English (American),WG,word,action_words,predicates,verbs,throw,,341
+item_342,tickle,English (American),WG,word,action_words,predicates,verbs,tickle,,342
+item_343,touch,English (American),WG,word,action_words,predicates,verbs,touch,,343
+item_344,watch (action),English (American),WG,word,action_words,predicates,verbs,watch (action),,344
+item_345,walk,English (American),WG,word,action_words,predicates,verbs,walk,,345
+item_346,wash,English (American),WG,word,action_words,predicates,verbs,wash,,346
+item_347,wipe,English (American),WG,word,action_words,predicates,verbs,wipe,,347
+item_348,write,English (American),WG,word,action_words,predicates,verbs,write,,348
+item_349,day,English (American),WG,word,time_words,other,other,day,,349
+item_350,later,English (American),WG,word,time_words,other,other,later,,350
+item_351,morning,English (American),WG,word,time_words,other,other,morning,,351
+item_352,night,English (American),WG,word,time_words,other,other,night,,352
+item_353,now,English (American),WG,word,time_words,other,other,now,,353
+item_354,today,English (American),WG,word,time_words,other,other,today,,354
+item_355,tomorrow,English (American),WG,word,time_words,other,other,tomorrow,,355
+item_356,tonight,English (American),WG,word,time_words,other,other,tonight,,356
+item_357,all gone,English (American),WG,word,descriptive_words,predicates,adjectives,all gone,,357
+item_358,asleep,English (American),WG,word,descriptive_words,predicates,adjectives,asleep,,358
+item_359,bad,English (American),WG,word,descriptive_words,predicates,adjectives,bad,,359
+item_360,big,English (American),WG,word,descriptive_words,predicates,adjectives,big,,360
+item_361,blue,English (American),WG,word,descriptive_words,predicates,adjectives,blue,,361
+item_362,broken,English (American),WG,word,descriptive_words,predicates,adjectives,broken,,362
+item_363,careful,English (American),WG,word,descriptive_words,predicates,adjectives,careful,,363
+item_364,clean (description),English (American),WG,word,descriptive_words,predicates,adjectives,clean (description),,364
+item_365,cold,English (American),WG,word,descriptive_words,predicates,adjectives,cold,,365
+item_366,cute,English (American),WG,word,descriptive_words,predicates,adjectives,cute,,366
+item_367,dark,English (American),WG,word,descriptive_words,predicates,adjectives,dark,,367
+item_368,dirty,English (American),WG,word,descriptive_words,predicates,adjectives,dirty,,368
+item_369,dry (description),English (American),WG,word,descriptive_words,predicates,adjectives,dry (description),,369
+item_370,empty,English (American),WG,word,descriptive_words,predicates,adjectives,empty,,370
+item_371,fast,English (American),WG,word,descriptive_words,predicates,adjectives,fast,,371
+item_372,fine,English (American),WG,word,descriptive_words,predicates,adjectives,fine,,372
+item_373,gentle,English (American),WG,word,descriptive_words,predicates,adjectives,gentle,,373
+item_374,good,English (American),WG,word,descriptive_words,predicates,adjectives,good,,374
+item_375,happy,English (American),WG,word,descriptive_words,predicates,adjectives,happy,,375
+item_376,hard,English (American),WG,word,descriptive_words,predicates,adjectives,hard,,376
+item_377,hot,English (American),WG,word,descriptive_words,predicates,adjectives,hot,,377
+item_378,hungry,English (American),WG,word,descriptive_words,predicates,adjectives,hungry,,378
+item_379,hurt,English (American),WG,word,descriptive_words,predicates,adjectives,hurt (description),,379
+item_380,little (description),English (American),WG,word,descriptive_words,predicates,adjectives,little (description),,380
+item_381,naughty,English (American),WG,word,descriptive_words,predicates,adjectives,naughty,,381
+item_382,nice,English (American),WG,word,descriptive_words,predicates,adjectives,nice,,382
+item_383,old,English (American),WG,word,descriptive_words,predicates,adjectives,old,,383
+item_384,pretty,English (American),WG,word,descriptive_words,predicates,adjectives,pretty,,384
+item_385,red,English (American),WG,word,descriptive_words,predicates,adjectives,red,,385
+item_386,scared,English (American),WG,word,descriptive_words,predicates,adjectives,scared,,386
+item_387,sick,English (American),WG,word,descriptive_words,predicates,adjectives,sick,,387
+item_388,sleepy,English (American),WG,word,descriptive_words,predicates,adjectives,sleepy,,388
+item_389,soft,English (American),WG,word,descriptive_words,predicates,adjectives,soft,,389
+item_390,thirsty,English (American),WG,word,descriptive_words,predicates,adjectives,thirsty,,390
+item_391,tired,English (American),WG,word,descriptive_words,predicates,adjectives,tired,,391
+item_392,wet,English (American),WG,word,descriptive_words,predicates,adjectives,wet (description),,392
+item_393,yucky,English (American),WG,word,descriptive_words,predicates,adjectives,yucky,,393
+item_394,his,English (American),WG,word,pronouns,function_words,function_words,his,,394
+item_395,her,English (American),WG,word,pronouns,function_words,function_words,her,,395
+item_396,I,English (American),WG,word,pronouns,function_words,function_words,i,,396
+item_397,it,English (American),WG,word,pronouns,function_words,function_words,it,,397
+item_398,me,English (American),WG,word,pronouns,function_words,function_words,me,,398
+item_399,mine,English (American),WG,word,pronouns,function_words,function_words,mine,,399
+item_400,my,English (American),WG,word,pronouns,function_words,function_words,my,,400
+item_401,that,English (American),WG,word,pronouns,function_words,function_words,that,,401
+item_402,this,English (American),WG,word,pronouns,function_words,function_words,this,,402
+item_403,you,English (American),WG,word,pronouns,function_words,function_words,you,,403
+item_404,your,English (American),WG,word,pronouns,function_words,function_words,your,,404
+item_405,how,English (American),WG,word,question_words,function_words,function_words,how,,405
+item_406,what,English (American),WG,word,question_words,function_words,function_words,what,,406
+item_407,when,English (American),WG,word,question_words,function_words,function_words,when (question),,407
+item_408,where,English (American),WG,word,question_words,function_words,function_words,where (question),,408
+item_409,who,English (American),WG,word,question_words,function_words,function_words,who,,409
+item_410,why,English (American),WG,word,question_words,function_words,function_words,why,,410
+item_411,away,English (American),WG,word,locations,function_words,function_words,away,,411
+item_412,back,English (American),WG,word,locations,function_words,function_words,back (location),,412
+item_413,down,English (American),WG,word,locations,function_words,function_words,down,,413
+item_414,in,English (American),WG,word,locations,function_words,function_words,in,,414
+item_415,inside,English (American),WG,word,locations,function_words,function_words,inside,,415
+item_416,off,English (American),WG,word,locations,function_words,function_words,off,,416
+item_417,on,English (American),WG,word,locations,function_words,function_words,on,,417
+item_418,out,English (American),WG,word,locations,function_words,function_words,out,,418
+item_419,there,English (American),WG,word,locations,function_words,function_words,there,,419
+item_420,under,English (American),WG,word,locations,function_words,function_words,under,,420
+item_421,up,English (American),WG,word,locations,function_words,function_words,up,,421
+item_422,all,English (American),WG,word,quantifiers,function_words,function_words,all,,422
+item_423,another,English (American),WG,word,quantifiers,function_words,function_words,another,,423
+item_424,more,English (American),WG,word,quantifiers,function_words,function_words,more,,424
+item_425,none,English (American),WG,word,quantifiers,function_words,function_words,none,,425
+item_426,not,English (American),WG,word,quantifiers,function_words,function_words,not,,426
+item_427,other,English (American),WG,word,quantifiers,function_words,function_words,other,,427
+item_428,same,English (American),WG,word,quantifiers,function_words,function_words,same,,428
+item_429,some,English (American),WG,word,quantifiers,function_words,function_words,some,,429
+item_430,armshow,English (American),WG,gestures_first,NA,NA,NA,NA,,430
+item_431,reachout,English (American),WG,gestures_first,NA,NA,NA,NA,,431
+item_432,points,English (American),WG,gestures_first,NA,NA,NA,NA,,432
+item_433,waves,English (American),WG,gestures_first,NA,NA,NA,NA,,433
+item_434,pickup,English (American),WG,gestures_first,NA,NA,NA,NA,,434
+item_435,shakhead,English (American),WG,gestures_first,NA,NA,NA,NA,,435
+item_436,nodhead,English (American),WG,gestures_first,NA,NA,NA,NA,,436
+item_437,showhush,English (American),WG,gestures_first,NA,NA,NA,NA,,437
+item_438,request,English (American),WG,gestures_first,NA,NA,NA,NA,,438
+item_439,blowkiss,English (American),WG,gestures_first,NA,NA,NA,NA,,439
+item_440,smacklip,English (American),WG,gestures_first,NA,NA,NA,NA,,440
+item_441,shrugs,English (American),WG,gestures_first,NA,NA,NA,NA,,441
+item_442,playpeek,English (American),WG,gestures_games,NA,NA,NA,NA,,442
+item_443,patycak2,English (American),WG,gestures_games,NA,NA,NA,NA,,443
+item_444,sobig,English (American),WG,gestures_games,NA,NA,NA,NA,,444
+item_445,chase,English (American),WG,gestures_games,NA,NA,NA,NA,,445
+item_446,dosing,English (American),WG,gestures_games,NA,NA,NA,NA,,446
+item_447,dodance,English (American),WG,gestures_games,NA,NA,NA,NA,,447
+item_448,eatspoon,English (American),WG,gestures_objects,NA,NA,NA,NA,,448
+item_449,drinkcup,English (American),WG,gestures_objects,NA,NA,NA,NA,,449
+item_450,combhair,English (American),WG,gestures_objects,NA,NA,NA,NA,,450
+item_451,bshteeth,English (American),WG,gestures_objects,NA,NA,NA,NA,,451
+item_452,wipeface,English (American),WG,gestures_objects,NA,NA,NA,NA,,452
+item_453,puthat,English (American),WG,gestures_objects,NA,NA,NA,NA,,453
+item_454,putshoe,English (American),WG,gestures_objects,NA,NA,NA,NA,,454
+item_455,putwatch,English (American),WG,gestures_objects,NA,NA,NA,NA,,455
+item_456,ptdsleep,English (American),WG,gestures_objects,NA,NA,NA,NA,,456
+item_457,blowhot,English (American),WG,gestures_objects,NA,NA,NA,NA,,457
+item_458,flyplane,English (American),WG,gestures_objects,NA,NA,NA,NA,,458
+item_459,ptndtele,English (American),WG,gestures_objects,NA,NA,NA,NA,,459
+item_460,snifflow,English (American),WG,gestures_objects,NA,NA,NA,NA,,460
+item_461,pushcar,English (American),WG,gestures_objects,NA,NA,NA,NA,,461
+item_462,throwges,English (American),WG,gestures_objects,NA,NA,NA,NA,,462
+item_463,ptndpour,English (American),WG,gestures_objects,NA,NA,NA,NA,,463
+item_464,ptndstir,English (American),WG,gestures_objects,NA,NA,NA,NA,,464
+item_465,putobed,English (American),WG,gestures_parent,NA,NA,NA,NA,,465
+item_466,cover,English (American),WG,gestures_parent,NA,NA,NA,NA,,466
+item_467,feedbotl,English (American),WG,gestures_parent,NA,NA,NA,NA,,467
+item_468,feedspon,English (American),WG,gestures_parent,NA,NA,NA,NA,,468
+item_469,brushit,English (American),WG,gestures_parent,NA,NA,NA,NA,,469
+item_470,burbit,English (American),WG,gestures_parent,NA,NA,NA,NA,,470
+item_471,pushit,English (American),WG,gestures_parent,NA,NA,NA,NA,,471
+item_472,rockit,English (American),WG,gestures_parent,NA,NA,NA,NA,,472
+item_473,kissit,English (American),WG,gestures_parent,NA,NA,NA,NA,,473
+item_474,dressit,English (American),WG,gestures_parent,NA,NA,NA,NA,,474
+item_475,wipeit,English (American),WG,gestures_parent,NA,NA,NA,NA,,475
+item_476,talkit,English (American),WG,gestures_parent,NA,NA,NA,NA,,476
+item_477,diaperit,English (American),WG,gestures_parent,NA,NA,NA,NA,,477
+item_478,sweep,English (American),WG,gestures_adult,NA,NA,NA,NA,,478
+item_479,putkey,English (American),WG,gestures_adult,NA,NA,NA,NA,,479
+item_480,pound,English (American),WG,gestures_adult,NA,NA,NA,NA,,480
+item_481,usesaw,English (American),WG,gestures_adult,NA,NA,NA,NA,,481
+item_482,type,English (American),WG,gestures_adult,NA,NA,NA,NA,,482
+item_483,ptndread,English (American),WG,gestures_adult,NA,NA,NA,NA,,483
+item_484,dovacuum,English (American),WG,gestures_adult,NA,NA,NA,NA,,484
+item_485,waterplt,English (American),WG,gestures_adult,NA,NA,NA,NA,,485
+item_486,playmus,English (American),WG,gestures_adult,NA,NA,NA,NA,,486
+item_487,ptnddriv,English (American),WG,gestures_adult,NA,NA,NA,NA,,487
+item_488,washdish,English (American),WG,gestures_adult,NA,NA,NA,NA,,488
+item_489,usecloth,English (American),WG,gestures_adult,NA,NA,NA,NA,,489
+item_490,usepen,English (American),WG,gestures_adult,NA,NA,NA,NA,,490
+item_491,dig,English (American),WG,gestures_adult,NA,NA,NA,NA,,491
+item_492,wearglas,English (American),WG,gestures_adult,NA,NA,NA,NA,,492

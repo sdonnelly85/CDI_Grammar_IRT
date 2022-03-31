@@ -1,0 +1,249 @@
+---
+title: Looking at the gesture subscale of the CDI WG
+author: Seamus Donnelly
+date compiled: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+We plan to use some of the CDI:WG Gesture data to test Hypothesis 3A in the [linked pre-registration](). However, it is not clear which items to use. We'd like to ensure that the gesture items themselves have a uni-dimensional structure. Otherwise, any multidimensional structure observed in the dataset with gesture and vocabulary could be due to multidimensionality among the gesture items, rather than between the two scales. I've therefore run the following analyses to explore the dimensionality of the gesture items. 
+
+#Data Prep
+```{r, message=FALSE}
+library(wordbankr)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(GGally)
+library(psych)
+library(MPsychoR)
+library(Gifi)
+library(sirt)
+```
+
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WG")
+Admin <- get_administration_data(language="English (American)", form="WG", original_ids=TRUE)
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WG")
+```
+
+Select only gesture items
+```{r}
+Gesture_Items <- Item %>%
+filter(grepl("gesture", type))
+```
+
+
+```{r}
+Ges <- Admin %>%
+  full_join(.,Inst, by="data_id") %>%
+  right_join(., Gesture_Items, by="num_item_id") %>%
+  mutate(
+  out = ifelse(value %in% c("not yet", "no"), yes = 0, no =
+           ifelse(value %in% c("yes", "sometimes"), yes = 1, no = 
+                    ifelse(value == "often", yes=2, no=NA)))) %>%
+  filter(longitudinal==FALSE)
+
+Ges %>%
+  group_by(value) %>%
+  summarise(
+    mean = mean(out), 
+    sd = sd(out)
+  )
+
+Ges %>%
+  group_by(out) %>%
+   count()
+```
+
+
+```{r}
+Ges_short_with_ids <- Ges %>% 
+  dplyr::select(data_id, value, out, type, num_item_id) %>%
+  mutate(
+    label = str_c(type, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  drop_na()
+
+
+N_NA =
+  nrow(Ges %>% 
+  dplyr::select(data_id, value, out, type, num_item_id) %>%
+  mutate(
+    label = str_c(type, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out")) - nrow(Ges_short_with_ids)
+```
+
+# Subscale-level analyses
+```{r}
+Ges_summary <- Ges_short_with_ids %>%
+  pivot_longer(2:64, names_to = c("Subscale", "Item"), 
+               names_pattern = "gestures_(.*)(...)") %>%
+  group_by(data_id, Subscale) %>%
+  mutate(total = sum(value)) %>%
+  slice(1) %>%
+  ungroup() %>%
+  dplyr::select("data_id", "Subscale", "total") %>%
+  pivot_wider(id_cols="data_id", names_from="Subscale", values_from = "total")
+```
+
+Look at correlations between total scores on each subscale.
+```{r}
+Ges_summary %>%
+  dplyr::select(-"data_id") %>%
+  ggpairs()
+  
+```
+
+They all look reasonably well correlated. Let's take a look at the item-level data. 
+
+# Item-level analyses
+Make polychoric correlation matrix
+```{r}
+Ges_short <- Ges_short_with_ids %>%
+  dplyr::select(-"data_id")
+```
+
+
+```{r}
+Ges_poly <- polychoric(Ges_short)
+```
+
+```{r}
+rho <- Ges_poly$rho
+```
+
+
+```{r}
+pc <- princals(rho)
+
+plot(pc)
+```
+
+```{r}
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 1121)
+```
+More evidence of multidimensionality than amongst the synytactic complexity items. 
+
+# IRT
+Fit 1, 2 and 3 factor models: results saved with code commented out since it takes a while for these models to run. 
+```{r}
+#library(mirt)
+m1 <- mirt(Ges_short, 1, "graded") # Graded because gestures_first is ordinal
+#m2 <- mirt(Ges_short, 2, "graded")
+#m3 <- mirt(Ges_short, 3, "graded")
+#m4 <- mirt(Ges_short, 4, "graded")
+```
+
+```{r}
+#saveRDS(m1, "m1.RDS")
+#saveRDS(m2, "m2.RDS")
+#saveRDS(m3, "m3.RDS")
+#saveRDS(m4, "m4.RDS")
+```
+
+```{r}
+m1 <- readRDS("m1.RDS")
+m2 <- readRDS("m2.RDS")
+m3 <- readRDS("m3.RDS")
+m4 <- readRDS("m4.RDS")
+```
+
+
+```{r}
+M2(m1)
+```
+```{r}
+M2(m2)
+```
+```{r}
+anova(m2, m1)
+```
+
+
+```{r}
+M2(m3)
+```
+
+```{r}
+anova(m3, m2)
+```
+
+```{r}
+M2(m4)
+```
+
+
+```{r}
+anova(m4, m3)
+```
+Look at the factor loadings from each model. 
+```{r}
+summary(m2, rotate="oblimin", suppress=.2)
+```
+Looks like parent is loading on a different factor than the others with a two-factor solutoin. 
+
+
+```{r}
+summary(m3, rotate="oblimin", suppress=.2)
+```
+Looks like first is loading on a third factor with three factor solution.
+```{r}
+summary(m4, rotate="oblimin", suppress=.2)
+```
+
+These appear to be loading onto factors in a relatively interpretable manner, with blocks of items roughly corresponding to subscales loading onto the same factor. Another option is to consider only the items on the First Gestures subscale. 
+
+
+```{r}
+fs <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+
+Ges_short2 <- data.frame(Ges_short)
+
+```
+
+```{r}
+m5 <- expl.detect(Ges_short2, fs, nclusters=2)
+m5b <- expl.detect(Ges_short2, fs, nclusters=3)
+```
+
+# Item-level analysis on First Gestures
+```{r}
+Gesture_Items %>%
+  dplyr::select("type", "definition")
+```
+
+```{r}
+m6 <- mirt(Ges_short[,1:12], 1, "graded")
+m7 <- mirt(Ges_short[,1:12], 2, "graded")
+```
+
+```{r}
+fs <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+
+Ges_short3 <- data.frame(Ges_short[1:12])
+
+m8 <- expl.detect(Ges_short3, fs, nclusters=2)
+```
+
+
+```{r}
+m1 <- mirt(Ges_short[1:20], 1, "graded")
+
+fs <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+
+Ges_short3 <- data.frame(Ges_short[1:20])
+
+m8 <- expl.detect(Ges_short3, fs, nclusters=3)
+```
+
+

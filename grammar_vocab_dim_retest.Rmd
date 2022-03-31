@@ -1,0 +1,278 @@
+---
+title: Dimensionality of Vocabulary and Grammar (Reduced Data)
+author: Seamus Donnelly
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+This script examines whether the vocabulary and grammar sections of the CDI can be distinguished as separate dimensions. This analysis considers only observations with a unique value on original_id. When we select data for which `longitudinal==false` there are still many observations with the same values of `original_id`. Most of these appear to be participants who were tested at multiple time points as part of a data set that wasn't exclusively longitudinal. However the help file for Wordbank indicates that this variable is not always reliable. We have therefore decided to run our analyses twice: [with]((www.rpubs.com))) and without multiple instances of original id. 
+
+Open the libraries. 
+```{r message=FALSE, warning=FALSE}
+options(max.print=500)
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(sirt) # additional IRT functions
+```
+
+# Data Preparation
+
+Download data sets.
+```{r}
+Inst <- read_csv("Wordbank_Data/Inst_WS_Eng.csv")
+Admin <- read_csv("Wordbank_Data/Admin_WS_Eng.csv")
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- read_csv("Wordbank_Data/Item_WS_Eng.csv")
+```
+
+Select 1 observation (the oldest) for each original id. 
+```{r}
+Quick_Test_Admin <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  arrange(age) %>%
+  mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), # Total number of trials per participant
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0 
+  )) %>%
+  ungroup()
+
+ggplot(Quick_Test_Admin, aes(x=total_N)) + geom_histogram()
+
+Quick_Test_Admin %>%
+  group_by(total_N) %>%
+  count()
+```
+
+Make sure I've selected latest administration. 
+```{r}
+Quick_Test_Admin %>%
+  filter(max_trial ==1) %>%
+  summarise(
+    Mean= mean(age),
+    Min= min(age),
+    max = max(age)
+  )
+
+
+Quick_Test_Admin %>%
+  filter(max_trial ==1) %>%
+  filter( age < 19) %>%
+  count()
+
+
+Quick_Test_Admin %>%
+  filter(trial_num ==1) %>%
+  summarise(
+    Mean= mean(age),
+    Min= min(age),
+    max = max(age)
+  )
+
+Quick_Test_Admin %>%
+  filter(trial_num==1) %>%
+  filter( age < 19) %>%
+  count()
+```
+
+Ok, that did what I wanted it to do, so now we'll make a new dataset that only has the last administration for each value of original id. 
+
+```{r}
+Admin2 <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  arrange(age) %>%
+   mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), 
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0)
+    ) %>%
+  ungroup(original_id) %>%
+  filter(max_trial==1)
+
+N_dropped <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  arrange(age) %>%
+   mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), 
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0)
+    ) %>%
+  ungroup(original_id) %>%
+  filter(max_trial==0) %>%
+  nrow()
+
+```
+
+## Make Grammatical Complexity Data
+```{r}
+Complex <- Admin2 %>% # start with new admin data set
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+nrow(Complex) == (N_total - N_long - N_dropped)*N_complexity_items 
+
+Dropped_long <- N_long + N_dropped # dropped because of both definitions of longitudinal
+```
+
+```{r}
+Complex$complexity_category <- ifelse(Complex$complexity_category == "", yes=Complex$type, no=Complex$complexity_category)
+```
+
+
+```{r}
+Complex_short_with_ids_all <- Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax"))) 
+
+Complex_short_with_ids <- Complex_short_with_ids_all %>% 
+  drop_na()
+
+N_NA <- nrow(Complex_short_with_ids_all) - nrow(Complex_short_with_ids)
+
+nrow(Complex_short_with_ids) == N_total - Dropped_long - N_NA
+```
+
+```{r}
+Complex_short_grammatical <- Complex_short_with_ids %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(starts_with(c("morphology", "syntax"))) # need to get rid of participant names for IRT models. 
+
+N_nog <- nrow(filter(Complex_short_with_ids, combine760 == 0))
+
+nrow(Complex_short_grammatical) == N_total - Dropped_long - N_NA - N_nog
+```
+
+##Make vocab data set. 
+```{r}
+Vocab <- Admin2 %>% # Start with new administration dataset.
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    ) 
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+nrow(Vocab) == (N_total - Dropped_long)*N_vocab 
+```
+
+```{r}
+Vocab_short_with_ids_all <- Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") 
+
+Vocab_short_with_ids <- Vocab_short_with_ids_all %>% 
+  drop_na()
+
+
+N_NA_vocab <- nrow(Vocab_short_with_ids_all) - nrow(Vocab_short_with_ids)
+
+Vocab_short <- Vocab_short_with_ids %>%
+  dplyr::select(-"data_id") # dataset for IRT can't have IDs
+
+nrow(Vocab_short_with_ids) == N_total - Dropped_long - N_NA_vocab  #Not yet updated
+```
+
+
+#Combine the two datasets
+```{r}
+full <- full_join(
+  Complex_short_with_ids, Vocab_short_with_ids, by="data_id"
+) %>%
+  filter(combine760 > 0) %>%
+  dplyr::select(-c("data_id", "combine760")) %>%
+  drop_na()
+
+nrow(full)/2187 # size of new dataset relative to the one in the prior analysis
+```
+
+
+# Some quick checks of dimensionality. 
+```{r}
+full_tetra <- tetrachoric(full)
+
+rho <- full_tetra$rho
+```
+
+```{r}
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 1875)
+```
+
+```{r}
+vss(rho, fa="fa", fm="minres", cor="poly", n.obs = 1875)
+```
+
+#Fit IRT model
+Try MIRT model.
+```{r}
+#m1 <- mirt(full, 1, "2PL")
+#saveRDS(m1, "combined_irt_output/re_test/m1.rds")
+m1 <-  readRDS("combined_irt_output/re_test/m1.rds")
+```
+Get factor scores
+```{r}
+fscores <- fscores(m1, use_dentype_estimate=TRUE)[,1]
+```
+
+Exploratory Detect
+```{r}
+full2 <- data.frame(full)
+```
+
+
+##Confirmatory DETECT: Grammar vs Vocab
+```{r}
+dtct <- c(rep(1, 37), rep(2, 478))
+
+conf <- conf.detect(full2, fscores, dtct)
+```
+
+DETECT is less than .2. No evidence of the dimensional structure with vocabulary and grammar.  
+
+Exploratory detect to look for any other form of multidimensionality. 
+```{r}
+d1 <- expl.detect(full2, fscores, nclusters=2)
+```
+
+Some evidence of multidimensionality. Let's look at which items belong to each dimension. 
+```{r}
+options(max.print=2000)
+d1
+```
+
+Looks like, mostly grammar and predicates on dimension 1, and mostly nouns on dimension 2. 
+

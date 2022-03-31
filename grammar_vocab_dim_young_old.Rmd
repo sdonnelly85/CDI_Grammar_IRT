@@ -1,0 +1,328 @@
+---
+title: Dimensionality of Vocabulary and Grammar (Older and Younger Participants)
+author: Seamus Donnelly
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+The purpose of this analysis is to re-run the DETECT analyses on a set of younger and older participants. If the unidimensional structure of the data in the full dataset is a consequence of mutualism, we would expect this data to intiially be multidimensional and then become unidimensional.
+
+
+```{r message=FALSE, warning=FALSE}
+options(max.print=500)
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(sirt) # additional IRT functions
+library(vegan)
+```
+
+# Data Preparation
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS", original_ids=TRUE)
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+```{r}
+Younger <- Admin %>%
+  filter(longitudinal==TRUE) %>%
+  filter(age < 20)
+
+N_Younger = nrow(Younger) 
+
+
+Older <- Admin %>%
+  filter(longitudinal==TRUE) %>%
+  filter(age > 20)
+
+N_Older = nrow(Older) 
+```
+
+## Make Younger Dataset
+### Complexity
+```{r}
+Younger_Complex <- Younger %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+nrow(Younger_Complex) == N_Younger*N_complexity_items #Not yet updated
+```
+
+
+```{r}
+Older_Complex <- Older %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "combine" | # to drop non-combiners
+           type == "complexity" # to calculate complexity scores.
+         ) %>%
+  mutate(
+    out = ifelse(value=="complex" | value=="sometimes" | value=="produces", yes=1, 
+                 no = ifelse(value=="often", yes=2, no =0))
+  ) 
+
+N_complexity_items = nrow(filter(Item, type == "combine" | 
+           type == "complexity"))
+
+nrow(Older_Complex) == N_Older*N_complexity_items #Not yet updated
+```
+
+```{r}
+Younger_Complex$complexity_category <- ifelse(Younger_Complex$complexity_category == "", yes=Younger_Complex$type, no=Younger_Complex$complexity_category)
+
+```
+
+```{r}
+Older_Complex$complexity_category <- ifelse(Older_Complex$complexity_category == "", yes=Older_Complex$type, no=Older_Complex$complexity_category)
+```
+
+
+```{r}
+Younger_Complex_short_with_ids_all <- Younger_Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax")))
+
+Younger_Complex_short_with_ids <- Younger_Complex_short_with_ids_all%>%
+  drop_na()
+
+N_Younger_NA = nrow(Younger_Complex_short_with_ids_all) - nrow(Younger_Complex_short_with_ids)
+
+Younger_Complex_short_grammatical <- Younger_Complex_short_with_ids %>%
+  filter(combine760 > 0)
+
+N_nog_y <- nrow(filter(Younger_Complex_short_with_ids, combine760 == 0))
+
+nrow(Younger_Complex_short_grammatical) == N_Younger - N_Younger_NA - N_nog_y 
+```
+
+```{r}
+Older_Complex_short_with_ids_all <- Older_Complex %>% 
+  dplyr::select(data_id, value, out, complexity_category, num_item_id) %>%
+  mutate(
+    label = str_c(complexity_category, num_item_id)
+  ) %>%
+  pivot_wider(id_cols=data_id, names_from = "label", values_from="out") %>%
+  dplyr::select(starts_with(c("data_id", "combine", "morphology", "syntax")))
+
+Older_Complex_short_with_ids <- Older_Complex_short_with_ids_all %>%
+  drop_na()
+
+N_Older_NA = nrow(Older_Complex_short_with_ids_all) - nrow(Older_Complex_short_with_ids)
+
+Older_Complex_short_grammatical <- Older_Complex_short_with_ids %>%
+  filter(combine760 > 0) 
+
+N_nog_o <- nrow(filter(Older_Complex_short_with_ids, combine760 == 0))
+
+nrow(Older_Complex_short_grammatical) == N_Older - N_Older_NA - N_nog_o
+```
+
+## Make vocab dataset. 
+```{r}
+Younger_Vocab <- Younger  %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    ) 
+
+
+
+Older_Vocab <- Older  %>%
+  left_join(.,Inst, by="data_id") %>%
+  left_join(., Item, by="num_item_id") %>%
+  filter(type == "word"
+         ) %>%
+  mutate(
+    out = ifelse(value=="produces", yes=1, no =0)
+    ) 
+
+N_vocab = nrow(filter(Item, type == "word")) 
+
+nrow(Younger_Vocab) == (N_Younger)*N_vocab 
+nrow(Older_Vocab) == (N_Older)*N_vocab 
+```
+
+```{r}
+Younger_Vocab_short_with_ids_all <- Younger_Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out")
+
+Younger_Vocab_short_with_ids <- Younger_Vocab_short_with_ids_all%>%
+  drop_na() # drop participants with missing data
+
+
+N_Younger_Vocab_NA = nrow(Younger_Vocab_short_with_ids_all) - nrow(Younger_Vocab_short_with_ids)
+
+
+nrow(Younger_Vocab_short_with_ids) == N_Younger - N_Younger_Vocab_NA
+
+Older_Vocab_short_with_ids_all <- Older_Vocab %>% 
+  filter(lexical_category == "nouns" | lexical_category == "predicates") %>%
+  dplyr::select(data_id, value, out, definition) %>%
+  pivot_wider(id_cols=data_id, names_from = "definition", values_from="out") 
+
+Older_Vocab_short_with_ids <-Older_Vocab_short_with_ids_all %>%
+  drop_na() # drop participants with missing data
+
+N_Older_Vocab_NA = nrow(Older_Vocab_short_with_ids_all) - nrow(Older_Vocab_short_with_ids)
+
+nrow(Older_Vocab_short_with_ids) == N_Older - N_Older_Vocab_NA
+
+
+```
+
+
+## Combine
+```{r}
+Younger_full <- left_join(
+  Younger_Complex_short_grammatical, Younger_Vocab_short_with_ids, by="data_id"
+) %>%
+  dplyr::select(-c("data_id", "combine760")) %>%
+  drop_na()
+#216
+
+nrow(Younger_full) == N_Younger - N_Younger_NA - N_nog_y
+
+Older_full <- left_join(
+  Older_Complex_short_grammatical, Older_Vocab_short_with_ids, by="data_id"
+) %>%
+  dplyr::select(-c("data_id", "combine760")) %>%
+  drop_na()
+#649
+
+nrow(Older_full) == N_Older - N_Older_NA - N_nog_o
+```
+
+
+# Initial Tests of Dimensionality
+
+## Younger
+```{r, message=FALSE, warning=FALSE}
+# Lots of warings here, but not essential to our anlaysis. Warnings, therefore, supressed. 
+Younger_full_tetra <- tetrachoric(Younger_full)
+
+rho <- Younger_full_tetra$rho
+
+Older_full_tetra <- tetrachoric(Older_full)
+
+rho2 <- Older_full_tetra$rho
+```
+
+```{r}
+fa.parallel(rho, fa="fa", fm="minres", cor="poly", n.obs = 216)
+```
+
+
+```{r}
+fa.parallel(rho2, fa="fa", fm="minres", cor="poly", n.obs = 653)
+```
+
+```{r}
+vss(rho, fa="fa", fm="minres", cor="poly", n.obs = 216)
+```
+```{r}
+vss(rho, fa="fa", fm="minres", cor="poly", n.obs = 653)
+```
+
+# DETECT
+Try MIRT model - shouldn't run because of low number of observations. Is there a way to use existing model to predict factor scores for new dataset? 
+```{r}
+#m1 <- mirt(full, 1, "2PL")
+#saveRDS(m1, "combined_irt_output/re_test/m1.rds")
+#m1 <-  readRDS("combined_irt_output/re_test/m1.rds")
+```
+
+Use sum score - no IRT
+```{r}
+fscores_younger <- rowSums(Younger_full)
+```
+
+Prepare dataframe
+```{r}
+Younger_full2 <- data.frame(Younger_full)
+```
+
+
+Confirmatory DETECT
+```{r}
+dtct <- c(rep(1, 37), rep(2, 478)) # grammar vs vocab
+dtct2 <- c(rep(1,37), rep(2, 286), rep(1,192)) # grammar & predicates vs nouns
+```
+
+
+```{r}
+conf <- conf.detect(Younger_full2, fscores_younger, dtct)
+```
+
+```{r}
+conf <- conf.detect(Younger_full2, fscores_younger, dtct2)
+```
+
+
+Does not seem like the 2-dimensional structure implied by the distinction between lexical items and grammatical items is justified. 
+
+Exploratory detect to look for any other form of multidimensionality. 
+```{r}
+d1 <- expl.detect(Younger_full2, fscores_younger, nclusters=2)
+```
+
+```{r}
+#options(max.print=2000)
+#d1
+```
+
+## Older 
+
+Use sum score
+```{r}
+fscores_older <- rowSums(Older_full)
+```
+
+Exploratory Detect
+```{r}
+Older_full2 <- data.frame(Older_full)
+```
+
+
+Confirmatory DETECT
+```{r}
+conf <- conf.detect(Older_full2, fscores_older, dtct)
+```
+
+
+```{r}
+conf <- conf.detect(Older_full2, fscores_older, dtct2)
+```
+
+
+```{r}
+d1 <- expl.detect(Older_full2, fscores_older, nclusters=2)
+```
+

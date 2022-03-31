@@ -1,0 +1,748 @@
+item_id,definition,language,form,type,category,lexical_category,lexical_class,uni_lemma,complexity_category,num_item_id
+item_1,tutÃ,Spanish (Mexican),WS,word,sounds,other,other,choo choo,,1
+item_2,quiquiriquÃ,Spanish (Mexican),WS,word,sounds,other,other,cockadoodledoo,,2
+item_3,Â¡pu,Spanish (Mexican),WS,word,sounds,other,other,bang,,3
+item_4,pipÃ,Spanish (Mexican),WS,word,sounds,other,other,honk honk,,4
+item_5,pÃ­o p�,Spanish (Mexican),WS,word,sounds,other,other,tweet tweet,,5
+item_6,muu,Spanish (Mexican),WS,word,sounds,other,other,moo,,6
+item_7,miau,Spanish (Mexican),WS,word,sounds,other,other,meow,,7
+item_8,guaguÃ,Spanish (Mexican),WS,word,sounds,other,other,woof woof,,8
+item_9,cuacuÃ,Spanish (Mexican),WS,word,sounds,other,other,quack quack,,9
+item_10,bee/mee,Spanish (Mexican),WS,word,sounds,other,other,baa baa,,10
+item_11,Â¡a,Spanish (Mexican),WS,word,sounds,other,other,yum yum,,11
+item_12,Â¡a,Spanish (Mexican),WS,word,sounds,other,other,ouch,,12
+item_13,vÃ­bo,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,13
+item_14,venado,Spanish (Mexican),WS,word,animals,nouns,nouns,deer,,14
+item_15,vaca,Spanish (Mexican),WS,word,animals,nouns,nouns,cow,,15
+item_16,tortuga,Spanish (Mexican),WS,word,animals,nouns,nouns,turtle,,16
+item_17,tigre,Spanish (Mexican),WS,word,animals,nouns,nouns,tiger,,17
+item_18,ratÃ�,Spanish (Mexican),WS,word,animals,nouns,nouns,mouse,,18
+item_19,rana,Spanish (Mexican),WS,word,animals,nouns,nouns,frog,,19
+item_20,puerco,Spanish (Mexican),WS,word,animals,nouns,nouns,pig,,20
+item_21,pollito,Spanish (Mexican),WS,word,animals,nouns,nouns,chick,,21
+item_22,pingÃ¼i,Spanish (Mexican),WS,word,animals,nouns,nouns,penguin,,22
+item_23,pescado,Spanish (Mexican),WS,word,animals,nouns,nouns,fish (animal),,23
+item_24,perro,Spanish (Mexican),WS,word,animals,nouns,nouns,dog,,24
+item_25,pato,Spanish (Mexican),WS,word,animals,nouns,nouns,duck,,25
+item_26,pÃ¡ja,Spanish (Mexican),WS,word,animals,nouns,nouns,bird,,26
+item_27,oso,Spanish (Mexican),WS,word,animals,nouns,nouns,bear,,27
+item_28,mosco,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,28
+item_29,mosca,Spanish (Mexican),WS,word,animals,nouns,nouns,fly (animal),,29
+item_30,mono,Spanish (Mexican),WS,word,animals,nouns,nouns,monkey,,30
+item_31,mariposa,Spanish (Mexican),WS,word,animals,nouns,nouns,butterfly,,31
+item_32,lobo,Spanish (Mexican),WS,word,animals,nouns,nouns,wolf,,32
+item_33,leÃ�,Spanish (Mexican),WS,word,animals,nouns,nouns,lion,,33
+item_34,jirafa,Spanish (Mexican),WS,word,animals,nouns,nouns,giraffe,,34
+item_35,hormiga,Spanish (Mexican),WS,word,animals,nouns,nouns,ant,,35
+item_36,hipopÃ³ta,Spanish (Mexican),WS,word,animals,nouns,nouns,hippopotamus,,36
+item_37,guajolote,Spanish (Mexican),WS,word,animals,nouns,nouns,turkey,,37
+item_38,gato,Spanish (Mexican),WS,word,animals,nouns,nouns,cat,,38
+item_39,ganso,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,39
+item_40,gallina,Spanish (Mexican),WS,word,animals,nouns,nouns,hen,,40
+item_41,foca,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,41
+item_42,elefante,Spanish (Mexican),WS,word,animals,nouns,nouns,elephant,,42
+item_43,conejo,Spanish (Mexican),WS,word,animals,nouns,nouns,bunny,,43
+item_44,cocodrilo,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,44
+item_45,cebra,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,45
+item_46,caballo,Spanish (Mexican),WS,word,animals,nouns,nouns,horse,,46
+item_47,burro,Spanish (Mexican),WS,word,animals,nouns,nouns,donkey,,47
+item_48,bÃº,Spanish (Mexican),WS,word,animals,nouns,nouns,owl,,48
+item_49,buey,Spanish (Mexican),WS,word,animals,nouns,nouns,ox,,49
+item_50,borrego,Spanish (Mexican),WS,word,animals,nouns,nouns,lamb,,50
+item_51,bicho,Spanish (Mexican),WS,word,animals,nouns,nouns,NA,,51
+item_52,ardilla,Spanish (Mexican),WS,word,animals,nouns,nouns,squirrel,,52
+item_53,araÃ�,Spanish (Mexican),WS,word,animals,nouns,nouns,spider,,53
+item_54,animal,Spanish (Mexican),WS,word,animals,nouns,nouns,animal,,54
+item_55,abeja,Spanish (Mexican),WS,word,animals,nouns,nouns,bee,,55
+item_56,trineo,Spanish (Mexican),WS,word,vehicles,nouns,nouns,NA,,56
+item_57,triciclo (vehicles),Spanish (Mexican),WS,word,vehicles,nouns,nouns,NA,,57
+item_58,tren,Spanish (Mexican),WS,word,vehicles,nouns,nouns,train,,58
+item_59,tractor,Spanish (Mexican),WS,word,vehicles,nouns,nouns,tractor,,59
+item_60,moto,Spanish (Mexican),WS,word,vehicles,nouns,nouns,motorcycle,,60
+item_61,helicÃ³pte,Spanish (Mexican),WS,word,vehicles,nouns,nouns,helicopter,,61
+item_62,carro/coche,Spanish (Mexican),WS,word,vehicles,nouns,nouns,car,,62
+item_63,carreola,Spanish (Mexican),WS,word,vehicles,nouns,nouns,stroller,,63
+item_64,camiÃ³n/tro,Spanish (Mexican),WS,word,vehicles,nouns,nouns,truck,,64
+item_65,camiÃ³n de bombe,Spanish (Mexican),WS,word,vehicles,nouns,nouns,firetruck,,65
+item_66,bicicleta,Spanish (Mexican),WS,word,vehicles,nouns,nouns,bicycle,,66
+item_67,barco,Spanish (Mexican),WS,word,vehicles,nouns,nouns,boat,,67
+item_68,aviÃ�,Spanish (Mexican),WS,word,vehicles,nouns,nouns,airplane,,68
+item_69,autobÃ�,Spanish (Mexican),WS,word,vehicles,nouns,nouns,NA,,69
+item_70,agua,Spanish (Mexican),WS,word,food_drink,nouns,nouns,water (beverage),,70
+item_71,arroz,Spanish (Mexican),WS,word,food_drink,nouns,nouns,rice,,71
+item_72,atole,Spanish (Mexican),WS,word,food_drink,nouns,nouns,atole,,72
+item_73,atÃ�,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,73
+item_74,azÃºc,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,74
+item_75,cafÃ,Spanish (Mexican),WS,word,food_drink,nouns,nouns,coffee,,75
+item_76,calabaza,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,76
+item_77,carne,Spanish (Mexican),WS,word,food_drink,nouns,nouns,meat,,77
+item_78,cereal,Spanish (Mexican),WS,word,food_drink,nouns,nouns,cereal,,78
+item_79,chÃ­cha,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,79
+item_80,chicle,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,80
+item_81,chile,Spanish (Mexican),WS,word,food_drink,nouns,nouns,chili,,81
+item_82,chocolate,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,82
+item_83,comida,Spanish (Mexican),WS,word,food_drink,nouns,nouns,food,,83
+item_84,dulce,Spanish (Mexican),WS,word,food_drink,nouns,nouns,candy,,84
+item_85,durazno,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,85
+item_86,ejotes,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,86
+item_87,elote,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,87
+item_88,espagueti,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,88
+item_89,fresa,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,89
+item_90,frijoles,Spanish (Mexican),WS,word,food_drink,nouns,nouns,beans,,90
+item_91,galleta,Spanish (Mexican),WS,word,food_drink,nouns,nouns,cookie,,91
+item_92,gelatina,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,92
+item_93,hamburguesa,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,93
+item_94,helado/nieve,Spanish (Mexican),WS,word,food_drink,nouns,nouns,ice cream,,94
+item_95,hielo,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,95
+item_96,hot cakes,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,96
+item_97,huevo,Spanish (Mexican),WS,word,food_drink,nouns,nouns,egg,,97
+item_98,jamÃ�,Spanish (Mexican),WS,word,food_drink,nouns,nouns,ham,,98
+item_99,jugo,Spanish (Mexican),WS,word,food_drink,nouns,nouns,juice,,99
+item_100,leche,Spanish (Mexican),WS,word,food_drink,nouns,nouns,milk,,100
+item_101,licuado,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,101
+item_102,limonada,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,102
+item_103,cacahuete/manÃ,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,103
+item_104,mantequilla,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,104
+item_105,manzana,Spanish (Mexican),WS,word,food_drink,nouns,nouns,apple,,105
+item_106,melÃ�,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,106
+item_107,mermelada,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,107
+item_108,naranja,Spanish (Mexican),WS,word,food_drink,nouns,nouns,orange (food),,108
+item_109,paleta,Spanish (Mexican),WS,word,food_drink,nouns,nouns,lollipop,,109
+item_110,palomitas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,110
+item_111,pan,Spanish (Mexican),WS,word,food_drink,nouns,nouns,bread,,111
+item_112,pan dulce,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,112
+item_113,papas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,113
+item_114,papitas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,114
+item_115,pasas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,115
+item_116,pastel,Spanish (Mexican),WS,word,food_drink,nouns,nouns,cake,,116
+item_117,peanut butter,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,117
+item_118,pescado (food_drink),Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,118
+item_119,plÃ¡tano/bana,Spanish (Mexican),WS,word,food_drink,nouns,nouns,banana,,119
+item_120,pollo,Spanish (Mexican),WS,word,food_drink,nouns,nouns,chicken (food),,120
+item_121,quesadilla,Spanish (Mexican),WS,word,food_drink,nouns,nouns,quesadilla,,121
+item_122,queso,Spanish (Mexican),WS,word,food_drink,nouns,nouns,cheese,,122
+item_123,sal,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,123
+item_124,salchicha,Spanish (Mexican),WS,word,food_drink,nouns,nouns,hot dog,,124
+item_125,salsa,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,125
+item_126,sandÃ�,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,126
+item_127,soda/refresco,Spanish (Mexican),WS,word,food_drink,nouns,nouns,soda,,127
+item_128,sopa,Spanish (Mexican),WS,word,food_drink,nouns,nouns,soup,,128
+item_129,taco,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,129
+item_130,tÃ© (foo,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,130
+item_131,torta/lonche,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,131
+item_132,tortilla,Spanish (Mexican),WS,word,food_drink,nouns,nouns,tortilla,,132
+item_133,uvas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,grapes,,133
+item_134,vainilla,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,134
+item_135,vitaminas,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,135
+item_136,yoghurt,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,136
+item_137,zanahoria,Spanish (Mexican),WS,word,food_drink,nouns,nouns,NA,,137
+item_138,botÃ�,Spanish (Mexican),WS,word,clothing,nouns,nouns,button,,138
+item_139,bufanda,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,139
+item_140,calcetÃ�,Spanish (Mexican),WS,word,clothing,nouns,nouns,sock,,140
+item_141,calzÃ�,Spanish (Mexican),WS,word,clothing,nouns,nouns,underpants,,141
+item_142,camisa,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,142
+item_143,chancla,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,143
+item_144,cierre,Spanish (Mexican),WS,word,clothing,nouns,nouns,zipper,,144
+item_145,collar,Spanish (Mexican),WS,word,clothing,nouns,nouns,necklace,,145
+item_146,falda,Spanish (Mexican),WS,word,clothing,nouns,nouns,skirt,,146
+item_147,gorra,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,147
+item_148,guantes,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,148
+item_149,lentes,Spanish (Mexican),WS,word,clothing,nouns,nouns,glasses,,149
+item_150,medias,Spanish (Mexican),WS,word,clothing,nouns,nouns,tights,,150
+item_151,paÃ±,Spanish (Mexican),WS,word,clothing,nouns,nouns,diaper,,151
+item_152,pantalÃ�,Spanish (Mexican),WS,word,clothing,nouns,nouns,pants,,152
+item_153,pijama,Spanish (Mexican),WS,word,clothing,nouns,nouns,pajamas,,153
+item_154,playera,Spanish (Mexican),WS,word,clothing,nouns,nouns,t-shirt,,154
+item_155,ropa,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,155
+item_156,shorts,Spanish (Mexican),WS,word,clothing,nouns,nouns,shorts,,156
+item_157,sombrero,Spanish (Mexican),WS,word,clothing,nouns,nouns,hat,,157
+item_158,suÃ©t,Spanish (Mexican),WS,word,clothing,nouns,nouns,sweater,,158
+item_159,vestido,Spanish (Mexican),WS,word,clothing,nouns,nouns,dress (object),,159
+item_160,zapato,Spanish (Mexican),WS,word,clothing,nouns,nouns,shoe,,160
+item_161,barba,Spanish (Mexican),WS,word,body_parts,nouns,nouns,NA,,161
+item_162,bigote,Spanish (Mexican),WS,word,body_parts,nouns,nouns,mustache,,162
+item_163,boca,Spanish (Mexican),WS,word,body_parts,nouns,nouns,mouth,,163
+item_164,brazo,Spanish (Mexican),WS,word,body_parts,nouns,nouns,arm,,164
+item_165,cabeza,Spanish (Mexican),WS,word,body_parts,nouns,nouns,head,,165
+item_166,cachete,Spanish (Mexican),WS,word,body_parts,nouns,nouns,cheek,,166
+item_167,cara,Spanish (Mexican),WS,word,body_parts,nouns,nouns,face,,167
+item_168,chichi/pecho,Spanish (Mexican),WS,word,body_parts,nouns,nouns,breast,,168
+item_169,dedo,Spanish (Mexican),WS,word,body_parts,nouns,nouns,finger,,169
+item_170,dientes,Spanish (Mexican),WS,word,body_parts,nouns,nouns,tooth,,170
+item_171,garganta/anginas,Spanish (Mexican),WS,word,body_parts,nouns,nouns,NA,,171
+item_172,hombro,Spanish (Mexican),WS,word,body_parts,nouns,nouns,NA,,172
+item_173,labios,Spanish (Mexican),WS,word,body_parts,nouns,nouns,NA,,173
+item_174,lengua,Spanish (Mexican),WS,word,body_parts,nouns,nouns,tongue,,174
+item_175,mano,Spanish (Mexican),WS,word,body_parts,nouns,nouns,hand,,175
+item_176,nalgas,Spanish (Mexican),WS,word,body_parts,nouns,nouns,NA,,176
+item_177,nariz,Spanish (Mexican),WS,word,body_parts,nouns,nouns,nose,,177
+item_178,ojos,Spanish (Mexican),WS,word,body_parts,nouns,nouns,eye,,178
+item_179,ombligo,Spanish (Mexican),WS,word,body_parts,nouns,nouns,belly button,,179
+item_180,oreja,Spanish (Mexican),WS,word,body_parts,nouns,nouns,ear,,180
+item_181,panza,Spanish (Mexican),WS,word,body_parts,nouns,nouns,tummy,,181
+item_182,pelo,Spanish (Mexican),WS,word,body_parts,nouns,nouns,hair,,182
+item_183,pene,Spanish (Mexican),WS,word,body_parts,nouns,nouns,penis,,183
+item_184,piernas,Spanish (Mexican),WS,word,body_parts,nouns,nouns,leg,,184
+item_185,pies,Spanish (Mexican),WS,word,body_parts,nouns,nouns,foot,,185
+item_186,rodilla,Spanish (Mexican),WS,word,body_parts,nouns,nouns,knee,,186
+item_187,vagina,Spanish (Mexican),WS,word,body_parts,nouns,nouns,vagina,,187
+item_188,bat,Spanish (Mexican),WS,word,toys,nouns,nouns,bat,,188
+item_189,burbujas,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,189
+item_190,colores,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,190
+item_191,crayolas,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,191
+item_192,globo/bomba,Spanish (Mexican),WS,word,toys,nouns,nouns,balloon,,192
+item_193,hoja/papel,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,193
+item_194,juguete,Spanish (Mexican),WS,word,toys,nouns,nouns,toy (object),,194
+item_195,lÃ¡p,Spanish (Mexican),WS,word,toys,nouns,nouns,pen/pencil,,195
+item_196,libro,Spanish (Mexican),WS,word,toys,nouns,nouns,book,,196
+item_197,muÃ±e,Spanish (Mexican),WS,word,toys,nouns,nouns,doll,,197
+item_198,osito,Spanish (Mexican),WS,word,toys,nouns,nouns,teddybear,,198
+item_199,patines,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,199
+item_200,pelota,Spanish (Mexican),WS,word,toys,nouns,nouns,ball,,200
+item_201,pinturas,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,201
+item_202,plastilina,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,202
+item_203,pluma/plumones,Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,203
+item_204,tambor,Spanish (Mexican),WS,word,toys,nouns,nouns,drum,,204
+item_205,triciclo (toys),Spanish (Mexican),WS,word,toys,nouns,nouns,NA,,205
+item_206,botas,Spanish (Mexican),WS,word,clothing,nouns,nouns,boots,,206
+item_207,bolsa (clothing),Spanish (Mexican),WS,word,clothing,nouns,nouns,purse,,207
+item_208,babero,Spanish (Mexican),WS,word,clothing,nouns,nouns,bib,,208
+item_209,aretes,Spanish (Mexican),WS,word,clothing,nouns,nouns,earrings,,209
+item_210,abrigo,Spanish (Mexican),WS,word,clothing,nouns,nouns,NA,,210
+item_211,almohada,Spanish (Mexican),WS,word,household,nouns,nouns,pillow,,211
+item_212,aspiradora,Spanish (Mexican),WS,word,household,nouns,nouns,vacuum,,212
+item_213,basura,Spanish (Mexican),WS,word,household,nouns,nouns,trash,,213
+item_214,bolsa (household),Spanish (Mexican),WS,word,household,nouns,nouns,NA,,214
+item_215,botella/mamila,Spanish (Mexican),WS,word,household,nouns,nouns,bottle,,215
+item_216,caja,Spanish (Mexican),WS,word,household,nouns,nouns,box,,216
+item_217,cÃ¡ma,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,217
+item_218,canasta,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,218
+item_219,cassette,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,219
+item_220,cepillo de dientes,Spanish (Mexican),WS,word,household,nouns,nouns,toothbrush,,220
+item_221,cepillo,Spanish (Mexican),WS,word,household,nouns,nouns,brush (object),,221
+item_222,cerillos,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,222
+item_223,chupÃ³n/chupe,Spanish (Mexican),WS,word,household,nouns,nouns,pacifier,,223
+item_224,cigarros,Spanish (Mexican),WS,word,household,nouns,nouns,cigarette,,224
+item_225,clavo,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,225
+item_226,cobija,Spanish (Mexican),WS,word,household,nouns,nouns,blanket,,226
+item_227,cuadro,Spanish (Mexican),WS,word,household,nouns,nouns,picture,,227
+item_228,cubeta,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,228
+item_229,cuchara,Spanish (Mexican),WS,word,household,nouns,nouns,spoon,,229
+item_230,cuchillo,Spanish (Mexican),WS,word,household,nouns,nouns,knife,,230
+item_231,dinero,Spanish (Mexican),WS,word,household,nouns,nouns,money,,231
+item_232,escoba,Spanish (Mexican),WS,word,household,nouns,nouns,broom,,232
+item_233,espejo,Spanish (Mexican),WS,word,household,nouns,nouns,mirror,,233
+item_234,fotos,Spanish (Mexican),WS,word,household,nouns,nouns,photos,,234
+item_235,jabÃ�,Spanish (Mexican),WS,word,household,nouns,nouns,soap,,235
+item_236,lÃ¡mpa,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,236
+item_237,llave,Spanish (Mexican),WS,word,household,nouns,nouns,keys,,237
+item_238,luz,Spanish (Mexican),WS,word,household,nouns,nouns,light (object),,238
+item_239,martillo,Spanish (Mexican),WS,word,household,nouns,nouns,hammer,,239
+item_240,medicina,Spanish (Mexican),WS,word,household,nouns,nouns,medicine,,240
+item_241,olla,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,241
+item_242,paÃ±ue,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,242
+item_243,papel,Spanish (Mexican),WS,word,household,nouns,nouns,paper,,243
+item_244,pasta de dientes,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,244
+item_245,peine,Spanish (Mexican),WS,word,household,nouns,nouns,comb (object),,245
+item_246,periÃ³di,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,246
+item_247,plancha,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,247
+item_248,plato,Spanish (Mexican),WS,word,household,nouns,nouns,plate,,248
+item_249,radio,Spanish (Mexican),WS,word,household,nouns,nouns,radio,,249
+item_250,reloj,Spanish (Mexican),WS,word,household,nouns,nouns,watch (object),,250
+item_251,servilleta,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,251
+item_252,tapete,Spanish (Mexican),WS,word,household,nouns,nouns,NA,,252
+item_253,taza,Spanish (Mexican),WS,word,household,nouns,nouns,cup,,253
+item_254,telÃ©fo,Spanish (Mexican),WS,word,household,nouns,nouns,telephone,,254
+item_255,tenedor,Spanish (Mexican),WS,word,household,nouns,nouns,fork,,255
+item_256,tijeras,Spanish (Mexican),WS,word,household,nouns,nouns,scissors,,256
+item_257,toalla,Spanish (Mexican),WS,word,household,nouns,nouns,towel,,257
+item_258,trapo,Spanish (Mexican),WS,word,household,nouns,nouns,cloth,,258
+item_259,vasos,Spanish (Mexican),WS,word,household,nouns,nouns,glass,,259
+item_260,vela,Spanish (Mexican),WS,word,household,nouns,nouns,candle,,260
+item_261,alberca/piscina,Spanish (Mexican),WS,word,outside,nouns,nouns,pool,,261
+item_262,Ã¡rb,Spanish (Mexican),WS,word,outside,nouns,nouns,tree,,262
+item_263,bandera,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,263
+item_264,cielo,Spanish (Mexican),WS,word,outside,nouns,nouns,sky,,264
+item_265,coladera,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,265
+item_266,columpio,Spanish (Mexican),WS,word,outside,nouns,nouns,swing (object),,266
+item_267,estrella,Spanish (Mexican),WS,word,outside,nouns,nouns,star,,267
+item_268,flor,Spanish (Mexican),WS,word,outside,nouns,nouns,flower,,268
+item_269,fuego,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,269
+item_270,hojas,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,270
+item_271,leÃ�,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,271
+item_272,lluvia,Spanish (Mexican),WS,word,outside,nouns,nouns,rain,,272
+item_273,luna,Spanish (Mexican),WS,word,outside,nouns,nouns,moon,,273
+item_274,maceta,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,274
+item_275,manguera,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,275
+item_276,muÃ±eco de nie,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,276
+item_277,nieve,Spanish (Mexican),WS,word,outside,nouns,nouns,snow,,277
+item_278,nube,Spanish (Mexican),WS,word,outside,nouns,nouns,cloud,,278
+item_279,pala,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,279
+item_280,palo,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,280
+item_281,pasto,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,281
+item_282,piedra,Spanish (Mexican),WS,word,outside,nouns,nouns,rock (object),,282
+item_283,planta,Spanish (Mexican),WS,word,outside,nouns,nouns,plant,,283
+item_284,reja,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,284
+item_285,resbaladilla,Spanish (Mexican),WS,word,outside,nouns,nouns,slide (object),,285
+item_286,sol,Spanish (Mexican),WS,word,outside,nouns,nouns,sun,,286
+item_287,tanque,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,287
+item_288,techo,Spanish (Mexican),WS,word,outside,nouns,nouns,roof,,288
+item_289,tierra,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,289
+item_290,timbre,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,290
+item_291,viento/aire,Spanish (Mexican),WS,word,outside,nouns,nouns,NA,,291
+item_292,bacinica,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,potty,,292
+item_293,banco (outside),Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,293
+item_294,baÃ�,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,bathroom,,294
+item_295,cajÃ�,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,drawer,,295
+item_296,cama,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,bed,,296
+item_297,champÃ,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,297
+item_298,cochera/garage,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,garage,,298
+item_299,cocina,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,kitchen,,299
+item_300,computadora,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,300
+item_301,cuarto,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,room,,301
+item_302,cuna,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,crib,,302
+item_303,escaleras,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,stairs,,303
+item_304,estufa,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,stove,,304
+item_305,horno,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,oven,,305
+item_306,lavabo,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,sink,,306
+item_307,lavadora,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,307
+item_308,librero,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,308
+item_309,mesa,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,table,,309
+item_310,mueble,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,310
+item_311,patio (outside),Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,311
+item_312,puerta,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,door,,312
+item_313,recÃ¡ma,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,bedroom,,313
+item_314,refrigerador,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,refrigerator,,314
+item_315,regadera/ducha,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,shower,,315
+item_316,ropero/closet,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,closet,,316
+item_317,sala,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,living room,,317
+item_318,secadora,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,318
+item_319,silla,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,chair,,319
+item_320,sillÃ�,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,NA,,320
+item_321,sofÃ,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,couch,,321
+item_322,televisiÃ�,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,tv,,322
+item_323,tina,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,bathtub,,323
+item_324,ventana,Spanish (Mexican),WS,word,furniture_rooms,nouns,nouns,window,,324
+item_325,banco (places),Spanish (Mexican),WS,word,places,other,other,NA,,325
+item_326,bosque,Spanish (Mexican),WS,word,places,other,other,NA,,326
+item_327,calle,Spanish (Mexican),WS,word,places,other,other,NA,,327
+item_328,campo,Spanish (Mexican),WS,word,places,other,other,NA,,328
+item_329,casa,Spanish (Mexican),WS,word,places,other,other,NA,,329
+item_330,cerro,Spanish (Mexican),WS,word,places,other,other,NA,,330
+item_331,cine,Spanish (Mexican),WS,word,places,other,other,NA,,331
+item_332,circo,Spanish (Mexican),WS,word,places,other,other,NA,,332
+item_333,escuela,Spanish (Mexican),WS,word,places,other,other,NA,,333
+item_334,fÃ¡bri,Spanish (Mexican),WS,word,places,other,other,NA,,334
+item_335,fiesta,Spanish (Mexican),WS,word,places,other,other,NA,,335
+item_336,hospital/clÃ­ni,Spanish (Mexican),WS,word,places,other,other,NA,,336
+item_337,iglesia/templo,Spanish (Mexican),WS,word,places,other,other,NA,,337
+item_338,jardÃ�,Spanish (Mexican),WS,word,places,other,other,NA,,338
+item_339,oficina,Spanish (Mexican),WS,word,places,other,other,NA,,339
+item_340,parque,Spanish (Mexican),WS,word,places,other,other,NA,,340
+item_341,patio (places),Spanish (Mexican),WS,word,places,other,other,NA,,341
+item_342,playa,Spanish (Mexican),WS,word,places,other,other,NA,,342
+item_343,rancho,Spanish (Mexican),WS,word,places,other,other,NA,,343
+item_344,rÃ�,Spanish (Mexican),WS,word,places,other,other,NA,,344
+item_345,tienda/mercado,Spanish (Mexican),WS,word,places,other,other,NA,,345
+item_346,zoolÃ³gi,Spanish (Mexican),WS,word,places,other,other,NA,,346
+item_347,abuela,Spanish (Mexican),WS,word,people,other,other,grandma,,347
+item_348,abuelo,Spanish (Mexican),WS,word,people,other,other,grandpa,,348
+item_349,amiga,Spanish (Mexican),WS,word,people,other,other,NA,,349
+item_350,amigo,Spanish (Mexican),WS,word,people,other,other,NA,,350
+item_351,bebÃ,Spanish (Mexican),WS,word,people,other,other,baby,,351
+item_352,cura,Spanish (Mexican),WS,word,people,other,other,NA,,352
+item_353,doctor,Spanish (Mexican),WS,word,people,other,other,NA,,353
+item_354,enfermera,Spanish (Mexican),WS,word,people,other,other,NA,,354
+item_355,familia,Spanish (Mexican),WS,word,people,other,other,family,,355
+item_356,hermana,Spanish (Mexican),WS,word,people,other,other,sister,,356
+item_357,hermano,Spanish (Mexican),WS,word,people,other,other,brother,,357
+item_358,madrina,Spanish (Mexican),WS,word,people,other,other,godmother,,358
+item_359,maestra,Spanish (Mexican),WS,word,people,other,other,teacher,,359
+item_360,mamÃ,Spanish (Mexican),WS,word,people,other,other,mommy,,360
+item_361,nana,Spanish (Mexican),WS,word,people,other,other,babysitter,,361
+item_362,niÃ�,Spanish (Mexican),WS,word,people,other,other,girl,,362
+item_363,niÃ�,Spanish (Mexican),WS,word,people,other,other,boy,,363
+item_364,(nombre del niÃ±o/,Spanish (Mexican),WS,word,people,other,other,child's own name,,364
+item_365,padrino,Spanish (Mexican),WS,word,people,other,other,godfather,,365
+item_366,papÃ,Spanish (Mexican),WS,word,people,other,other,daddy,,366
+item_367,payaso,Spanish (Mexican),WS,word,people,other,other,NA,,367
+item_368,persona,Spanish (Mexican),WS,word,people,other,other,person,,368
+item_369,policÃ�,Spanish (Mexican),WS,word,people,other,other,police,,369
+item_370,prima,Spanish (Mexican),WS,word,people,other,other,NA,,370
+item_371,primo,Spanish (Mexican),WS,word,people,other,other,NA,,371
+item_372,seÃ±,Spanish (Mexican),WS,word,people,other,other,man,,372
+item_373,seÃ±o,Spanish (Mexican),WS,word,people,other,other,woman,,373
+item_374,tÃ�,Spanish (Mexican),WS,word,people,other,other,aunt,,374
+item_375,tÃ�,Spanish (Mexican),WS,word,people,other,other,uncle,,375
+item_376,acerrÃ�,Spanish (Mexican),WS,word,games_routines,other,other,kid's song,,376
+item_377,adÃ­os/byeb,Spanish (Mexican),WS,word,games_routines,other,other,bye,,377
+item_378,ahÃ­ te v,Spanish (Mexican),WS,word,games_routines,other,other,NA,,378
+item_379,al agua patos...,Spanish (Mexican),WS,word,games_routines,other,other,NA,,379
+item_380,a ver...,Spanish (Mexican),WS,word,games_routines,other,other,NA,,380
+item_381,besitos,Spanish (Mexican),WS,word,games_routines,other,other,kiss,,381
+item_382,bravo,Spanish (Mexican),WS,word,games_routines,other,other,NA,,382
+item_383,buenos dÃ­,Spanish (Mexican),WS,word,games_routines,other,other,good morning,,383
+item_384,buenas noches,Spanish (Mexican),WS,word,games_routines,other,other,good night,,384
+item_385,cosquillitas,Spanish (Mexican),WS,word,games_routines,other,other,tickle,,385
+item_386,gracias,Spanish (Mexican),WS,word,games_routines,other,other,thank you,,386
+item_387,hola,Spanish (Mexican),WS,word,games_routines,other,other,hi,,387
+item_388,manos arriba,Spanish (Mexican),WS,word,games_routines,other,other,hands up,,388
+item_389,ojitos,Spanish (Mexican),WS,word,games_routines,other,other,look at me,,389
+item_390,okay,Spanish (Mexican),WS,word,games_routines,other,other,NA,,390
+item_391,pon pon tata,Spanish (Mexican),WS,word,games_routines,other,other,NA,,391
+item_392,por favor,Spanish (Mexican),WS,word,games_routines,other,other,please,,392
+item_393,salud,Spanish (Mexican),WS,word,games_routines,other,other,bless you,,393
+item_394,shhh,Spanish (Mexican),WS,word,games_routines,other,other,shh,,394
+item_395,siesta,Spanish (Mexican),WS,word,games_routines,other,other,NA,,395
+item_396,tengo manita,Spanish (Mexican),WS,word,games_routines,other,other,have hands,,396
+item_397,te voy a pegar...,Spanish (Mexican),WS,word,games_routines,other,other,NA,,397
+item_398,tortillitas,Spanish (Mexican),WS,word,games_routines,other,other,pattycake,,398
+item_399,uno dos tres...,Spanish (Mexican),WS,word,games_routines,other,other,one two three,,399
+item_400,vÃ¡mon,Spanish (Mexican),WS,word,games_routines,other,other,NA,,400
+item_401,ir(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,go,,401
+item_402,jalar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,402
+item_403,jugar,Spanish (Mexican),WS,word,action_words,predicates,verbs,play,,403
+item_404,juntar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,404
+item_405,lastimar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,405
+item_406,lavar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,wash,,406
+item_407,leer,Spanish (Mexican),WS,word,action_words,predicates,verbs,read,,407
+item_408,levantar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,408
+item_409,llevar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,take,,409
+item_410,llorar,Spanish (Mexican),WS,word,action_words,predicates,verbs,cry,,410
+item_411,llover,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,411
+item_412,meter(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,put,,412
+item_413,mirar,Spanish (Mexican),WS,word,action_words,predicates,verbs,look,,413
+item_414,morder,Spanish (Mexican),WS,word,action_words,predicates,verbs,bite,,414
+item_415,nadar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,415
+item_416,oÃ�,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,416
+item_417,parar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,stop,,417
+item_418,patear,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,418
+item_419,patinar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,419
+item_420,pegar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,hit,,420
+item_421,peinar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,comb (action),,421
+item_422,pensar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,422
+item_423,perder,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,423
+item_424,pintar,Spanish (Mexican),WS,word,action_words,predicates,verbs,paint (action),,424
+item_425,platicar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,425
+item_426,poder,Spanish (Mexican),WS,word,action_words,predicates,verbs,can (auxiliary),,426
+item_427,poner(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,put,,427
+item_428,prender,Spanish (Mexican),WS,word,action_words,predicates,verbs,turn on,,428
+item_429,quedar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,429
+item_430,quemar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,430
+item_431,querer,Spanish (Mexican),WS,word,action_words,predicates,verbs,wanna,,431
+item_432,quitar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,432
+item_433,regalar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,433
+item_434,romper,Spanish (Mexican),WS,word,action_words,predicates,verbs,break,,434
+item_435,saber,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,435
+item_436,sacar,Spanish (Mexican),WS,word,action_words,predicates,verbs,take out,,436
+item_437,salir(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,437
+item_438,saltar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,438
+item_439,saludar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,439
+item_440,sentar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,sit,,440
+item_441,soplar,Spanish (Mexican),WS,word,action_words,predicates,verbs,blow,,441
+item_442,subir(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,climb,,442
+item_443,tapar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,443
+item_444,tener,Spanish (Mexican),WS,word,action_words,predicates,verbs,have,,444
+item_445,terminar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,445
+item_446,tirar,Spanish (Mexican),WS,word,action_words,predicates,verbs,throw,,446
+item_447,tocar,Spanish (Mexican),WS,word,action_words,predicates,verbs,touch,,447
+item_448,tomar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,take,,448
+item_449,traer(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,449
+item_450,venir(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,450
+item_451,ver(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,see,,451
+item_452,acabar,Spanish (Mexican),WS,word,action_words,predicates,verbs,finish,,452
+item_453,acompaÃ±,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,453
+item_454,acostar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,454
+item_455,agarrar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,455
+item_456,almorzar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,456
+item_457,amarrar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,457
+item_458,andar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,458
+item_459,apagar,Spanish (Mexican),WS,word,action_words,predicates,verbs,turn off,,459
+item_460,apurar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,hurry,,460
+item_461,arreglar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,461
+item_462,asustar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,462
+item_463,aventar,Spanish (Mexican),WS,word,action_words,predicates,verbs,throw,,463
+item_464,ayudar,Spanish (Mexican),WS,word,action_words,predicates,verbs,help,,464
+item_465,bailar,Spanish (Mexican),WS,word,action_words,predicates,verbs,dance,,465
+item_466,bajar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,466
+item_467,barrer,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,467
+item_468,besar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,468
+item_469,brincar,Spanish (Mexican),WS,word,action_words,predicates,verbs,jump,,469
+item_470,buscar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,470
+item_471,caber,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,471
+item_472,caer(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,fall,,472
+item_473,callar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,473
+item_474,caminar,Spanish (Mexican),WS,word,action_words,predicates,verbs,walk,,474
+item_475,cantar,Spanish (Mexican),WS,word,action_words,predicates,verbs,sing,,475
+item_476,cargar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,476
+item_477,cenar,Spanish (Mexican),WS,word,action_words,predicates,verbs,eat dinner,,477
+item_478,cerrar,Spanish (Mexican),WS,word,action_words,predicates,verbs,close,,478
+item_479,cocinar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,479
+item_480,comer(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,eat,,480
+item_481,comprar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,481
+item_482,correr,Spanish (Mexican),WS,word,action_words,predicates,verbs,run,,482
+item_483,cortar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,483
+item_484,dar,Spanish (Mexican),WS,word,action_words,predicates,verbs,give,,484
+item_485,decir,Spanish (Mexican),WS,word,action_words,predicates,verbs,say,,485
+item_486,desayunar,Spanish (Mexican),WS,word,action_words,predicates,verbs,eat breakfast,,486
+item_487,dibujar,Spanish (Mexican),WS,word,action_words,predicates,verbs,draw,,487
+item_488,doler,Spanish (Mexican),WS,word,action_words,predicates,verbs,hurt (action),,488
+item_489,dormir(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,sleep,,489
+item_490,empujar,Spanish (Mexican),WS,word,action_words,predicates,verbs,push,,490
+item_491,encontrar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,491
+item_492,enseÃ±,Spanish (Mexican),WS,word,action_words,predicates,verbs,show,,492
+item_493,entrar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,493
+item_494,equivocar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,494
+item_495,esconder(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,495
+item_496,escribir,Spanish (Mexican),WS,word,action_words,predicates,verbs,write,,496
+item_497,escuchar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,497
+item_498,esperar(se),Spanish (Mexican),WS,word,action_words,predicates,verbs,wait,,498
+item_499,ganar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,499
+item_500,gritar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,500
+item_501,gustar,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,501
+item_502,hacer,Spanish (Mexican),WS,word,action_words,predicates,verbs,NA,,502
+item_503,abrir,Spanish (Mexican),WS,word,action_words,predicates,verbs,open (action),,503
+item_504,estar,Spanish (Mexican),WS,word,states,function_words,function_words,be,,504
+item_505,haber (hay),Spanish (Mexican),WS,word,states,function_words,function_words,NA,,505
+item_506,ser,Spanish (Mexican),WS,word,states,function_words,function_words,be,,506
+item_507,alto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,507
+item_508,amarillo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,yellow,,508
+item_509,azul,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,blue,,509
+item_510,blanco,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,510
+item_511,bonita,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,pretty,,511
+item_512,bueno,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,512
+item_513,caliente,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,hot,,513
+item_514,cansado,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,tired,,514
+item_515,chaparro,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,515
+item_516,chico,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,little (description),,516
+item_517,chulo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,517
+item_518,descompuesto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,518
+item_519,despierto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,519
+item_520,diferente,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,different,,520
+item_521,difÃ­c,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,hard,,521
+item_522,duro,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,522
+item_523,enfermo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,sick,,523
+item_524,enojado,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,angry,,524
+item_525,feliz,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,525
+item_526,feo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,ugly,,526
+item_527,flaco,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,527
+item_528,frÃ�,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,cold,,528
+item_529,fuchi,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,yucky,,529
+item_530,fuerte,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,530
+item_531,gordo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,531
+item_532,grande,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,big,,532
+item_533,guapo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,cute,,533
+item_534,hambre,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,hungry,,534
+item_535,igual,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,same,,535
+item_536,largo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,536
+item_537,lento,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,537
+item_538,limpio,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,clean (description),,538
+item_539,linda,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,539
+item_540,lleno,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,full,,540
+item_541,malo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,bad,,541
+item_542,mejor,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,542
+item_543,miedo/susto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,scared,,543
+item_544,mojado,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,544
+item_545,morado,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,545
+item_546,negro,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,546
+item_547,nuevo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,new,,547
+item_548,oscuro,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,dark,,548
+item_549,pegajoso,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,549
+item_550,peligroso,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,550
+item_551,pesado,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,heavy,,551
+item_552,pobre,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,552
+item_553,primero,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,553
+item_554,rÃ¡pido (descriptiv,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,554
+item_555,rojo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,red,,555
+item_556,rosa,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,556
+item_557,roto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,broken,,557
+item_558,ruidoso,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,558
+item_559,seco,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,559
+item_560,suave,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,soft,,560
+item_561,sucio,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,dirty,,561
+item_562,tonto,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,562
+item_563,tranquilo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,563
+item_564,travieso,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,564
+item_565,triste,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,sad,,565
+item_566,Ãºlti,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,NA,,566
+item_567,vacÃ�,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,empty,,567
+item_568,verde,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,green,,568
+item_569,viejo,Spanish (Mexican),WS,word,descriptive_words,predicates,adjectives,old,,569
+item_570,ahorita/ahora,Spanish (Mexican),WS,word,time_words,other,other,now,,570
+item_571,al rato,Spanish (Mexican),WS,word,time_words,other,other,NA,,571
+item_572,antes,Spanish (Mexican),WS,word,time_words,other,other,NA,,572
+item_573,ayer,Spanish (Mexican),WS,word,time_words,other,other,yesterday,,573
+item_574,despuÃ�,Spanish (Mexican),WS,word,time_words,other,other,after,,574
+item_575,dÃ�,Spanish (Mexican),WS,word,time_words,other,other,day,,575
+item_576,en la maÃ±a,Spanish (Mexican),WS,word,time_words,other,other,NA,,576
+item_577,en la noche,Spanish (Mexican),WS,word,time_words,other,other,NA,,577
+item_578,en la tarde,Spanish (Mexican),WS,word,time_words,other,other,NA,,578
+item_579,hoy,Spanish (Mexican),WS,word,time_words,other,other,today,,579
+item_580,maÃ±a,Spanish (Mexican),WS,word,time_words,other,other,tomorrow,,580
+item_581,noche,Spanish (Mexican),WS,word,time_words,other,other,night,,581
+item_582,aquel,Spanish (Mexican),WS,word,pronouns,function_words,function_words,that,,582
+item_583,aquella,Spanish (Mexican),WS,word,pronouns,function_words,function_words,that,,583
+item_584,aquellas,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,584
+item_585,aquellos,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,585
+item_586,Ã©l (pronoun,Spanish (Mexican),WS,word,pronouns,function_words,function_words,he,,586
+item_587,ella,Spanish (Mexican),WS,word,pronouns,function_words,function_words,her,,587
+item_588,ellas,Spanish (Mexican),WS,word,pronouns,function_words,function_words,they,,588
+item_589,ellos,Spanish (Mexican),WS,word,pronouns,function_words,function_words,they,,589
+item_590,esa,Spanish (Mexican),WS,word,pronouns,function_words,function_words,that,,590
+item_591,esas,Spanish (Mexican),WS,word,pronouns,function_words,function_words,those,,591
+item_592,ese,Spanish (Mexican),WS,word,pronouns,function_words,function_words,that,,592
+item_593,eso,Spanish (Mexican),WS,word,pronouns,function_words,function_words,that,,593
+item_594,esos,Spanish (Mexican),WS,word,pronouns,function_words,function_words,those,,594
+item_595,Ã©s,Spanish (Mexican),WS,word,pronouns,function_words,function_words,this,,595
+item_596,Ã©st,Spanish (Mexican),WS,word,pronouns,function_words,function_words,these,,596
+item_597,Ã©s,Spanish (Mexican),WS,word,pronouns,function_words,function_words,this,,597
+item_598,esto,Spanish (Mexican),WS,word,pronouns,function_words,function_words,this,,598
+item_599,Ã©st,Spanish (Mexican),WS,word,pronouns,function_words,function_words,these,,599
+item_600,le,Spanish (Mexican),WS,word,pronouns,function_words,function_words,it,,600
+item_601,les,Spanish (Mexican),WS,word,pronouns,function_words,function_words,them,,601
+item_602,lo,Spanish (Mexican),WS,word,pronouns,function_words,function_words,him,,602
+item_603,me,Spanish (Mexican),WS,word,pronouns,function_words,function_words,me,,603
+item_604,mÃ,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,604
+item_605,mÃ�,Spanish (Mexican),WS,word,pronouns,function_words,function_words,mine,,605
+item_606,mÃ­,Spanish (Mexican),WS,word,pronouns,function_words,function_words,mine,,606
+item_607,mÃ�,Spanish (Mexican),WS,word,pronouns,function_words,function_words,mine,,607
+item_608,mÃ­,Spanish (Mexican),WS,word,pronouns,function_words,function_words,mine,,608
+item_609,nosotros,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,609
+item_610,nuestro,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,610
+item_611,se,Spanish (Mexican),WS,word,pronouns,function_words,function_words,self,,611
+item_612,su,Spanish (Mexican),WS,word,pronouns,function_words,function_words,his,,612
+item_613,suya,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,613
+item_614,suyas,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,614
+item_615,suyo,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,615
+item_616,suyos,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,616
+item_617,te (pronouns),Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,617
+item_618,tÃ,Spanish (Mexican),WS,word,pronouns,function_words,function_words,NA,,618
+item_619,tÃ,Spanish (Mexican),WS,word,pronouns,function_words,function_words,you,,619
+item_620,tuya,Spanish (Mexican),WS,word,pronouns,function_words,function_words,your,,620
+item_621,tuyas,Spanish (Mexican),WS,word,pronouns,function_words,function_words,your,,621
+item_622,tuyo,Spanish (Mexican),WS,word,pronouns,function_words,function_words,your,,622
+item_623,tuyos,Spanish (Mexican),WS,word,pronouns,function_words,function_words,your,,623
+item_624,yo,Spanish (Mexican),WS,word,pronouns,function_words,function_words,i,,624
+item_625,cÃ³,Spanish (Mexican),WS,word,question_words,function_words,function_words,how,,625
+item_626,cuÃ�,Spanish (Mexican),WS,word,question_words,function_words,function_words,which (question),,626
+item_627,cuÃ¡n,Spanish (Mexican),WS,word,question_words,function_words,function_words,NA,,627
+item_628,dÃ³n,Spanish (Mexican),WS,word,question_words,function_words,function_words,where (question),,628
+item_629,por quÃ,Spanish (Mexican),WS,word,question_words,function_words,function_words,why,,629
+item_630,quÃ© (question_word,Spanish (Mexican),WS,word,question_words,function_words,function_words,what,,630
+item_631,quiÃ�,Spanish (Mexican),WS,word,question_words,function_words,function_words,who,,631
+item_632,a,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,632
+item_633,con,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,633
+item_634,de,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,634
+item_635,el (propositions),Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,635
+item_636,en,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,636
+item_637,entre,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,637
+item_638,la,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,638
+item_639,las,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,639
+item_640,los,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,640
+item_641,para,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,641
+item_642,pero,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,642
+item_643,un,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,643
+item_644,una,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,644
+item_645,unas,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,645
+item_646,unos,Spanish (Mexican),WS,word,prepositions,function_words,function_words,NA,,646
+item_647,asÃ,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,647
+item_648,bien,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,648
+item_649,despacio,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,649
+item_650,mal,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,650
+item_651,mÃ�,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,more,,651
+item_652,mucho,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,a lot,,652
+item_653,nada,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,nothing,,653
+item_654,no,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,654
+item_655,no hay,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,none,,655
+item_656,otro/otra vez,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,again,,656
+item_657,poco/poquito,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,657
+item_658,rÃ¡pido (quantifier,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,658
+item_659,sÃ,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,NA,,659
+item_660,todo,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,all,,660
+item_661,ya,Spanish (Mexican),WS,word,quantifiers,function_words,function_words,already,,661
+item_662,abajo,Spanish (Mexican),WS,word,locations,function_words,function_words,down,,662
+item_663,adentro,Spanish (Mexican),WS,word,locations,function_words,function_words,inside,,663
+item_664,afuera,Spanish (Mexican),WS,word,locations,function_words,function_words,out,,664
+item_665,ahÃ,Spanish (Mexican),WS,word,locations,function_words,function_words,there,,665
+item_666,allÃ,Spanish (Mexican),WS,word,locations,function_words,function_words,NA,,666
+item_667,allÃ,Spanish (Mexican),WS,word,locations,function_words,function_words,NA,,667
+item_668,aquÃ,Spanish (Mexican),WS,word,locations,function_words,function_words,here,,668
+item_669,arriba,Spanish (Mexican),WS,word,locations,function_words,function_words,up,,669
+item_670,atrÃ�,Spanish (Mexican),WS,word,locations,function_words,function_words,back (location),,670
+item_671,cerca,Spanish (Mexican),WS,word,locations,function_words,function_words,NA,,671
+item_672,encima,Spanish (Mexican),WS,word,locations,function_words,function_words,on,,672
+item_673,enfrente,Spanish (Mexican),WS,word,locations,function_words,function_words,NA,,673
+item_674,lejos,Spanish (Mexican),WS,word,locations,function_words,function_words,NA,,674
+item_675,entonces,Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,675
+item_676,luego,Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,676
+item_677,o,Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,677
+item_678,pues,Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,678
+item_679,que (connection word),Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,679
+item_680,y,Spanish (Mexican),WS,word,connecting_words,function_words,function_words,NA,,680
+item_681,does your child ever talk about past events or people who are not present?,Spanish (Mexican),WS,how_use_words,NA,NA,NA,NA,,681
+item_682,does your child ever talk about something that's going to happen in the future?,Spanish (Mexican),WS,how_use_words,NA,NA,NA,NA,,682
+item_683,does your child talk about objects that are not present?,Spanish (Mexican),WS,how_use_words,NA,NA,NA,NA,,683
+item_684,does your child understand if you ask for something that is not in the room?,Spanish (Mexican),WS,how_use_words,NA,NA,NA,NA,,684
+item_685,does your child ever pick up or point to an object and name an absent person to whom the object belongs?,Spanish (Mexican),WS,how_use_words,NA,NA,NA,NA,,685
+item_686,acaba (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,686
+item_687,acabas (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,687
+item_688,acabamos (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,688
+item_689,acabo (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,689
+item_690,come (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,690
+item_691,comemos (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,691
+item_692,comes (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,692
+item_693,como (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,693
+item_694,sube (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,694
+item_695,subes (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,695
+item_696,subimos (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,696
+item_697,subo (present),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,697
+item_698,acabÃ© (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,698
+item_699,acabÃ³ (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,699
+item_700,comÃ­ (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,700
+item_701,comiÃ³ (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,701
+item_702,subÃ­ (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,702
+item_703,subiÃ³ (pas,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,703
+item_704,acaba (imperative),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,704
+item_705,acÃ¡bate (imperativ,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,705
+item_706,come (imperative),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,706
+item_707,cÃ³mete (imperativ,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,707
+item_708,sube (imperative),Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,708
+item_709,sÃºbete (imperativ,Spanish (Mexican),WS,word_forms,NA,NA,NA,NA,,709
+item_710,combine,Spanish (Mexican),WS,combine,NA,NA,NA,NA,,710
+item_711,nene quiere / quiero paleta,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,711
+item_712,tuyo esto / este es tuyo,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,712
+item_713,Tito malo / soy malo,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,713
+item_714,Pepe uvas / quiero uvas,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,714
+item_715,agua vamos / vamos al agua,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,715
+item_716,a silla / en la silla,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,716
+item_717,pollo no / no quiero pollo,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,717
+item_718,Paloma llorando / Paloma estÃ¡ lloran,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,718
+item_719,mÃ­o lÃ¡piz / Ã©ste es mi ,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,719
+item_720,mÃ¡s leche / dame mÃ¡s l,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,720
+item_721,papo mami / el zapato es de mami,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,721
+item_722,no aquÃ­ / Ã©se no estÃ¡,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,722
+item_723,rompiÃ³ globo / se rompiÃ³ el g,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,723
+item_724,leche caliente / la leche estÃ¡ calien,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,724
+item_725,duele panza / me duele la panza,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,725
+item_726,guaguÃ¡ grande / tengo un perro gran,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,726
+item_727,calle allÃ¡ estÃ¡ / allÃ¡ estÃ¡ ,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,727
+item_728,puse a mano / lo puse en mi mano,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,728
+item_729,acabÃ³ agua / se me acabÃ³ el ,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,729
+item_730,fue casa / se fue a su casa,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,730
+item_731,silla subir / me quiero subir a la silla,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,731
+item_732,Marta papÃ¡ / quiero ir con pap,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,732
+item_733,bravo Tello circo / dije bravo en el circo,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,733
+item_734,papÃ¡ calle / papÃ¡ se fue a trab,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,734
+item_735,ya puse / ya se lo puse,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,735
+item_736,Chalo osito coche / Chalo dejÃ³ el osito en el coc,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,736
+item_737,lÃ¡piz dibujar / dibujo con el lÃ�,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,737
+item_738,ya pintÃ© / ya acabÃ© de pi,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,738
+item_739,nene rompiÃ³ bici Danny / el niÃ±o rompiÃ³ la bici de,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,739
+item_740,pone no / no lo pongas,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,740
+item_741,vamos comer papas carne / vamos a comer papas y carne,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,741
+item_742,niÃ±o llora cayÃ³ / el niÃ±o llora porque se,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,742
+item_743,mamÃ¡ nene compra / mamÃ¡ y nene fueron a com,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,743
+item_744,abre dame galleta / abre la caja y dame una galleta,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,744
+item_745,no toca; quemas / no lo toques porque te quemas,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,745
+item_746,quiero libro papÃ¡ / quiero el libra que comprÃ³ p,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,746
+item_747,pongo agua flores / pongo agua para que crezcan las flores,Spanish (Mexican),WS,complexity,NA,NA,NA,NA,syntax,747

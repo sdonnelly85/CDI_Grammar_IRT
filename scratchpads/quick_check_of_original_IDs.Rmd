@@ -1,0 +1,149 @@
+---
+title: Understanding the repeat observations in the American English section of Wordbank data set. 
+author: Seamus Donnelly
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+In using the American English data from Wordbank, I've noticed that there appear to be many participants for whom we have several observations (based on the original id variable). I've decided to take a closer look at these data so I understand what is happening. 
+
+```{r message=FALSE, warning=FALSE}
+options(max.print=500)
+library(wordbankr) # WB data
+library(tidyverse) # tidy
+library(mirt) # IRT models
+library(psych) # some psychometric stuff (tests of dimensionality)
+library(Gifi)# some more psychometric stuff (tests of dimensionality)
+library(knitr) # some formatting, tables, etc
+library(patchwork) # combining plots. 
+library(sirt) # additional IRT functions
+```
+
+```{r}
+Inst <- get_instrument_data(language="English (American)", form="WS")
+Admin <- get_administration_data(language="English (American)", form="WS", original_ids=TRUE) # original IDs for getting additional instances
+N_total = nrow(Admin) # making sure things add up later
+N_long = nrow(filter(Admin, longitudinal==TRUE)) # making sure things add up later
+Item <- get_item_data(language="English (American)", form = "WS")
+```
+
+I added the original id variable to the admin dataset. This will allow me to see IDs that are duplicated. 
+
+To get a sense of the number of duplicated original ids across the dataset, I ran the following. 
+```{r}
+Quick_Test_Admin <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(original_id) %>%
+  mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), # Total number of trials per participant
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0 
+  )) %>%
+  ungroup()
+
+ggplot(Quick_Test_Admin, aes(x=total_N)) + geom_histogram()
+
+Quick_Test_Admin %>%
+  group_by(total_N) %>%
+  count()
+```
+
+The help file for Wordbankr says that Wordbank provides no guarantees about the structure or uniqueness of the original IDs. However, I suspect they must have used these in the analyses reported in the Wordbank book, since they used a subset of this data in their cross-lagged panel models. 
+
+However, it's possible that different data sources used overlapping coding schemes such that distinct participants have the same value of original id. To check this, I re-ran the above analysis, grouping observations by source and original id. 
+
+```{r}
+Quick_Test_Admin <- Admin %>%
+  filter(longitudinal==FALSE) %>%
+  group_by(source_name, original_id) %>%
+    mutate(
+    D = 1,
+    trial_num = row_number(), 
+    total_N = sum(D), # Total number of trials per participant
+    max_trial = ifelse(total_N == trial_num, yes=1, no=0 
+  )) %>%
+  ungroup()
+
+ggplot(Quick_Test_Admin, aes(x=total_N)) + geom_histogram()
+
+Quick_Test_Admin %>%
+  group_by(total_N) %>%
+  count()
+```
+These numbers aren't quite the same as the ones above. This means that there must be some values of original id that are the same across multiple data sources. 
+
+To check this out, I compared the original IDs from each source file to the full Wordbank data. 
+```{r}
+check <- function(NAME){
+  A = filter(Admin, source_name==NAME) 
+  B = filter(Admin, source_name != NAME)
+  A %>%
+    filter(original_id %in% B$original_id) 
+}
+
+check("Byers")
+check("Marchman (Dallas)")
+check("Marchman (Norming)")
+check("Marchman (Outreach1)")
+check("Marchman Wisconsin")
+check("Smith (electronic)") %>% arrange(original_id) %>% dplyr::select("original_id", "age", "production", "data_id")
+check("Smith (paper)") %>% arrange(original_id)%>% dplyr::select("original_id", "age", "production", "data_id")
+```
+
+It looks like there are some overlapping original IDs in the Smith (electronic) and Smith (paper) datasets. I'm not 100% sure those reflect the same kids, but it sure seems like it. Look at the examples below
+
+```{r}
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==10880)  %>% dplyr::select("original_id", "age", "source_name", "production", "data_id")
+
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==11000)  %>% dplyr::select("original_id", "age", "source_name", "production", "data_id")
+
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==11011)  %>% dplyr::select("original_id", "age", "source_name","production", "data_id")
+
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==11205)  %>% dplyr::select("original_id", "age", "source_name", "production", "data_id")
+
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==11593)  %>% dplyr::select("original_id", "age", "source_name", "production", "data_id")
+```
+
+It seems like the same kids were tested multiple times in these data sets, and that the electronic data contain the oldest administration. Sometimes the same original id and time point are included in both data sets. In these cases, the two files often differ by a couple points, though I don't see a consistent pattern. Let's plot the difference scores observations that have the same original id and age. 
+```{r}
+Smith_elect <- Admin %>%
+  filter(source_name == "Smith (electronic)") %>%
+  mutate(
+    new_id = paste(as.character(original_id), as.character(age))
+  ) %>%
+  dplyr::select("new_id", prod_elec = "production")
+
+Smith_paper <- Admin %>%
+  filter(source_name == "Smith (paper)") %>%
+  mutate(
+    new_id = paste(as.character(original_id), as.character(age))
+  ) %>%
+  dplyr::select("new_id", prod_paper = "production")
+
+Smith_full <- inner_join(Smith_elect, Smith_paper, by="new_id") %>%
+  mutate(
+    diff = prod_elec - prod_paper) # 69 observations of same original id and age. 
+
+ggplot(Smith_full, aes(diff)) + geom_histogram()
+
+ggplot(Smith_full, aes(diff)) + geom_histogram() + xlim(-5, 5)  # zoom in
+```
+Hmm, for some of these participants there's a huge difference. Let's look at the one who's close to 500. 
+```{r}
+Admin %>%
+  filter((source_name %in% c("Smith (electronic)", "Smith (paper)")) & original_id==14259)  %>% dplyr::select("original_id", "age", "source_name", "production", "data_id")
+```
+So, there's two Smith (electronics) which have the same original ID and age, but are clearly different participants (productive vocabulary scores of 148 and 643). 
+
+I think there is a lot of overlap across instances with the same original id, but it's not entirely the case. So, in my main analyses, I think I'm going to do everything twice, once with all observations, and once with all observations that are unique with respect to the original id variable. 
